@@ -179,4 +179,4 @@ public class AddAnOrder extends JFrame implements ActionListener {
     //If you wanna see how it works, check AddAnOrder.java (on the github i sent) to see the hardcoded process, everytime when you run main, it adds data into the equipments table.
     //
     //Now you are gonna integrate it with a GUI using swing.
-
+// Test update
