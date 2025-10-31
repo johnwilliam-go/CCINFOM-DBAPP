@@ -46,7 +46,6 @@ public class MainMenu extends JFrame implements ActionListener {
         this.setContentPane(backgroundLabel);
         this.setVisible(true);
         this.setResizable(false);
-
     }
 
     public static void main(String[] args) {
@@ -56,10 +55,7 @@ public class MainMenu extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == button1) {
-            JOptionPane.showMessageDialog(null,
-                    "Insert Customer name, Order Number, Table Number, OrderType, PaymentMethod, OrderDetails," +
-                            "\nThen for each order line, add item id, Prepared By, Quanity, cooking notes if there is, and order Status" +
-                            "\ntables affected: kitchen order ticket, order entries");
+            new AddAnOrder();
         }
         else if (e.getSource() == button2) {
             JOptionPane.showMessageDialog(null,
