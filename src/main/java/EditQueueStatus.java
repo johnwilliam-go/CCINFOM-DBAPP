@@ -1,3 +1,5 @@
 public class EditQueueStatus {
-    System.out.println("ANG HIRAP NG CCPROG3 AAAAAAAAAA");
+    public void WhatIsThis() {
+        System.out.println("ANG HIRAP NG CCPROG3 AAAAAAAAAA");
+    }
 }
