@@ -132,6 +132,7 @@ public class AddAnOrder extends JFrame implements ActionListener {
 
         addCustomer.add(title);
         addCustomer.add(nameLabel);
+        addCustomer.add(buttonGoBack2);
         addCustomer.add(orderNumberLabel);
         addCustomer.add(tableNumberLabel);
         addCustomer.add(orderTypeLabel);
