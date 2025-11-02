@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 
 public class MainMenu extends JFrame implements ActionListener {
 
-    JButton button1, button2, button3,  button4;
+    JButton button1, button2, button3,  button4, AvgOrderPrep, OrdersAndSales, FrequentStation, MaintenanceReport;
     public MainMenu() {
         ImageIcon background = new ImageIcon("src/main/resources/kitchen.jpg");
         JLabel backgroundLabel = new JLabel(background);
