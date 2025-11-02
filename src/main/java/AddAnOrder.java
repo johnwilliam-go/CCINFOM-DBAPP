@@ -317,6 +317,16 @@ public class AddAnOrder extends JFrame implements ActionListener {
 
             }
         }
+        else if (e.getSource() == buttonGoBack) {
+            addCustomer.setVisible(false);
+            addOrderEntries.setVisible(false);
+            mainFrame.setVisible(true);
+        }
+        else if  (e.getSource() == buttonGoBack2) {
+            addCustomer.setVisible(false);
+            mainFrame.setVisible(true);
+        }
+
     }
 
     //    public static void main(String[] args) throws Exception {
