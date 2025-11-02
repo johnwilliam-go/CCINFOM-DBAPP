@@ -78,7 +78,8 @@ public class MainMenu extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == button1) {
-            new AddAnOrder();
+            this.setVisible(false);
+            new AddAnOrder(this);
         }
         else if (e.getSource() == button2) {
             JOptionPane.showMessageDialog(null,
