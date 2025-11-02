@@ -57,6 +57,11 @@ public class MainMenu extends JFrame implements ActionListener {
         backgroundLabel.add(button2);
         backgroundLabel.add(button3);
         backgroundLabel.add(button4);
+        backgroundLabel.add(AvgOrderPrep);
+        backgroundLabel.add(OrdersAndSales);
+        backgroundLabel.add(FrequentStation);
+        backgroundLabel.add(MaintenanceReport);
+
 
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
