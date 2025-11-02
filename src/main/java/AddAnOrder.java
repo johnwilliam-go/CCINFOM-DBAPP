@@ -148,6 +148,23 @@ public class AddAnOrder extends JFrame implements ActionListener {
         addCustomer.setVisible(true);
     }
 
+    public AddAnOrder(){
+        // Create a dummy JFrame to satisfy the mainFrame variable during standalone testing
+        this.mainFrame = new JFrame();
+        addCustomer = new JFrame("Adding an Order - Customer Details");
+        addOrderEntries = new JFrame("Adding an Order - Customer's Order Entries");
+        customerDetailsFrame();
+        addCustomer.setVisible(true);
+    }
+
+    // 2. THIS IS THE MAIN METHOD
+    public static void main(String[] args) {
+        // This ensures the GUI is created safely on the Event Dispatch Thread (EDT)
+        SwingUtilities.invokeLater(() -> {
+            new AddAnOrder(); // Calls the new no-argument constructor
+        });
+    }
+
     public void customerOrderEntries(){
         addOrderEntries.setSize(800,600);
         addOrderEntries.setResizable(false);
