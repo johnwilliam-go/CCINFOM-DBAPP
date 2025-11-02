@@ -196,6 +196,7 @@ public class AddAnOrder extends JFrame implements ActionListener {
         buttonAddOrderItem.addActionListener(this);
 
         addOrderEntries.add(title);
+        addOrderEntries.add(buttonGoBack);
         addOrderEntries.add(buttonAddOrderItem);
         addOrderEntries.add(customerNameDisplay);
         addOrderEntries.add(selectItemLabel);
