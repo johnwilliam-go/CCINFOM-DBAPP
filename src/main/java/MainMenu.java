@@ -20,8 +20,15 @@ public class MainMenu extends JFrame implements ActionListener {
 
         button1 = new JButton("Add an order");
         button2 = new JButton("Update existing order status");
-        button3 = new JButton("Record a Maintenance");
-        button4 = new JButton("Update Maintenance status");
+        button3 = new JButton("Edit Staff Roles");
+        button4 = new JButton("Log a Maintenance");
+        AvgOrderPrep = new JButton("Avg Order Prep");
+        OrdersAndSales = new JButton("Orders and Sales");
+        FrequentStation = new JButton("Frequent Station");
+        MaintenanceReport = new JButton("Maintenance Report");
+
+
+
 
 
         button1.addActionListener(this);
