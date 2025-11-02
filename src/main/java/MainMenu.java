@@ -29,10 +29,16 @@ public class MainMenu extends JFrame implements ActionListener {
         button3.addActionListener(this);
         button4.addActionListener(this);
 
-        button1.setBounds(300, 150, 200, 50);
-        button2.setBounds(300, 225, 200, 50);
-        button3.setBounds(300, 300, 200, 50);
-        button4.setBounds(300, 375, 200, 50);
+        button1.setBounds(100, 150, 200, 50);
+        button2.setBounds(100, 225, 200, 50);
+        button3.setBounds(100, 300, 200, 50);
+        button4.setBounds(100, 375, 200, 50);
+        AvgOrderPrep.setBounds(500, 150, 200, 50);
+        OrdersAndSales.setBounds(500, 225, 200, 50);
+        FrequentStation.setBounds(500, 300, 200, 50);
+        MaintenanceReport.setBounds(500, 375, 200, 50);
+
+
 
         backgroundLabel.add(title);
         backgroundLabel.add(button1);
