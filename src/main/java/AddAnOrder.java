@@ -130,6 +130,10 @@ public class AddAnOrder extends JFrame implements ActionListener {
         button.setBounds(200, 410, 200, 30);
         button.addActionListener(this);
 
+        buttonGoBack2 = new JButton("Go Back");
+        buttonGoBack2.setBounds(500, 500, 200, 30);
+        buttonGoBack2.addActionListener(this);
+
         addCustomer.add(title);
         addCustomer.add(nameLabel);
         addCustomer.add(buttonGoBack2);
