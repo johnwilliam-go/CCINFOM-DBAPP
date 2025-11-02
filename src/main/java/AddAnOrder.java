@@ -253,7 +253,7 @@ public class AddAnOrder extends JFrame implements ActionListener {
                 throw new RuntimeException(ex);
             }
         }
-        if  (e.getSource() == buttonAddOrderItem) {
+        else if  (e.getSource() == buttonAddOrderItem) {
             try {
                 Connection connection = DriverManager.getConnection(
                         "jdbc:mysql://127.0.0.1:3306/ccinfomdb",
