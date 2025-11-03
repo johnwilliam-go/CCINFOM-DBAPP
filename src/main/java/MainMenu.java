@@ -71,6 +71,7 @@ public class MainMenu extends JFrame implements ActionListener {
         this.setResizable(false);
     }
 
+
     public static void main(String[] args) {
         new MainMenu();
     }

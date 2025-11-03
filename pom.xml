@@ -20,14 +20,14 @@
             <url>https://repo.maven.apache.org/maven2</url>
         </repository>
     </repositories>
-
     <dependencies>
-        <!-- ✅ MySQL JDBC Driver -->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
             <version>8.3.0</version>
         </dependency>
+
+
     </dependencies>
 
 </project>
