@@ -9,7 +9,7 @@ public class AddAnOrder extends JFrame implements ActionListener {
     private final JFrame mainFrame;
     private final JFrame addCustomer;
     private JFrame addOrderEntries;
-    private JButton  button, buttonAddOrderItem ;
+    private JButton  button, buttonAddOrderItem, buttonGoBack, buttonGoBack2;
     private JTextField name, orderNumber, tableNumber, orderDetails, quantity, cookingNotes;
     private JComboBox orderType, paymentMethod, itemList;
     private JLabel title,nameLabel, orderNumberLabel, tableNumberLabel,orderTypeLabel, paymentMethodLabel, orderDetailsLabel;
@@ -149,6 +149,7 @@ public class AddAnOrder extends JFrame implements ActionListener {
         addCustomer.add(paymentMethod);
         addCustomer.add(orderDetails);
         addCustomer.add(button);
+
         addCustomer.add(backgroundLabel);
         addCustomer.setVisible(true);
     }
