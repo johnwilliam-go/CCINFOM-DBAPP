@@ -90,9 +90,13 @@ public class MainMenu extends JFrame implements ActionListener {
                     "\nTable affected: maintenancetracker");
         }
         else if (e.getSource() == button4) {
-            JOptionPane.showMessageDialog(null,
-                    "Edit through reportID and add information like description (if you have alr), priority, status" +
-                            "\nTable affected: maintenancetracker");
+            this.setVisible(false);
+            MaintenanceLog maintenanceWindow = new MaintenanceLog();
+            maintenanceWindow.setVisible(true);
+
+            //JOptionPane.showMessageDialog(null,
+                    //"Edit through reportID and add information like description (if you have alr), priority, status" +
+                            //"\nTable affected: maintenancetracker");
         }
 
         // Report #1
