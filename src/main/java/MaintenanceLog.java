@@ -5,17 +5,22 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.List;
-import java.util.ArrayList;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.sql.*;
 import java.util.Date;
-import java.text.SimpleDateFormat;
 
 public class MaintenanceLog extends JFrame {
 
-    // --- In-Memory Data Storage (Replaces the Database) ---
-    private List<MaintenanceLogEntry> logEntries;
-    private List<EquipmentItem> equipmentList;
-    private static int nextReportId = 103;
+    // --- Database Connection ---
+    // !!! CHANGE THESE TO YOUR DATABASE !!!
+    private static final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
+    private static final String DB_URL = "jdbc:mysql://127.0.0.1:3306/ccinfomdb";
+    private static final String DB_USER = "root"; // e.g., "root"
+    private static final String DB_PASS = "12345678";
+
+    // This connection is created by this class, not MainMenu
+    private Connection conn;
 
     // --- GUI Components ---
     private JTable maintenanceTable;
@@ -24,15 +29,71 @@ public class MaintenanceLog extends JFrame {
     private JComboBox<String> issueTypeCombo;
     private JButton submitButton;
 
-    // --- Fonts and Colors (for the new style) ---
+    // --- Fonts and Colors ---
     private static final Font FONT_LABEL = new Font("Segoe UI", Font.BOLD, 14);
     private static final Font FONT_COMPONENT = new Font("Segoe UI", Font.PLAIN, 14);
-    private static final Color COLOR_PANEL_BG = new Color(245, 245, 245); // Light gray background
+    private static final Color COLOR_PANEL_BG = new Color(245, 245, 245);
     private static final Border PADDING_BORDER = new EmptyBorder(15, 15, 15, 15);
 
-    public MaintenanceLog() {
-        super("Maintenance Logging System");
+    // --- Reference to the Main Menu (can be null if run standalone) ---
+    private MainMenu parentMenu;
 
+    /**
+     * Constructor 1: For Standalone Mode.
+     * Called by the main() method in THIS file.
+     */
+    public MaintenanceLog() {
+        super("Maintenance Logging (Standalone Mode)");
+        this.parentMenu = null; // No parent menu
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // Run the common GUI setup
+        initialize();
+
+        // Center on the screen
+        setLocationRelativeTo(null);
+    }
+
+    /**
+     * Constructor 2: For Module Mode.
+     * Called by MainMenu.java.
+     * @param parentMenu The MainMenu object that is launching this window.
+     */
+    public MaintenanceLog(MainMenu parentMenu) {
+        super("Maintenance Logging System (Janret Galvez)");
+        this.parentMenu = parentMenu; // Store the reference
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        // Add the listener to re-show the MainMenu when this window closes
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                // We must also close our connection when this window is disposed
+                try {
+                    if (conn != null && !conn.isClosed()) {
+                        conn.close();
+                        System.out.println("MaintenanceLog DB connection closed.");
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+                parentMenu.setVisible(true);
+            }
+        });
+
+        // Run the common GUI setup
+        initialize();
+
+        // Center relative to the main menu
+        setLocationRelativeTo(parentMenu);
+    }
+
+    /**
+     * Common initialization method.
+     * Contains all the setup code shared by both constructors.
+     * This is where the database connection is now made.
+     */
+    private void initialize() {
         // Set a more modern Look and Feel
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -42,41 +103,32 @@ public class MaintenanceLog extends JFrame {
 
         // --- Basic Window Setup ---
         setSize(1000, 700);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
-        // 1. Create the mock data
-        createMockData();
+        try {
+            // --- 1. Create OWN Database Connection ---
+            Class.forName(DB_DRIVER);
+            conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+            System.out.println("MaintenanceLog DB connection successful.");
 
-        // 2. Build the GUI components
-        initComponents();
+            // --- 2. Build the GUI components ---
+            initComponents();
 
-        // 3. Load the mock data into the GUI
-        loadMaintenanceLogs();
-        loadEquipmentDropdown();
+            // --- 3. Load initial data from SQL Database ---
+            loadMaintenanceLogs();
+            loadEquipmentDropdown();
 
-        // Center the window
-        setLocationRelativeTo(null);
-        // Make the window visible
-        setVisible(true);
+        } catch (ClassNotFoundException e) {
+            showErrorDialog("Database Error", "MySQL JDBC Driver not found!");
+            System.exit(1);
+        } catch (SQLException e) {
+            showErrorDialog("Connection Failed", "Could not connect to database:\n" + e.getMessage());
+            System.exit(1);
+        } catch (Exception e) {
+            showErrorDialog("Error", "An unexpected error occurred:\n" + e.getMessage());
+        }
     }
 
-    /**
-     * Initializes all the in-memory data lists.
-     */
-    private void createMockData() {
-        // ... (Same as before)
-        logEntries = new ArrayList<>();
-        equipmentList = new ArrayList<>();
-        EquipmentItem oven = new EquipmentItem(1, "Industrial Oven", "cooking equipment");
-        EquipmentItem freezer = new EquipmentItem(2, "Walk-in Freezer", "Ref");
-        EquipmentItem fryer = new EquipmentItem(3, "Deep Fryer", "cooking equipment");
-        equipmentList.add(oven);
-        equipmentList.add(freezer);
-        equipmentList.add(fryer);
-        logEntries.add(new MaintenanceLogEntry(101, oven, "need cleaning", new Date(), "in Progress", 0.0));
-        logEntries.add(new MaintenanceLogEntry(102, fryer, "repair", new Date(), "in Progress", 0.0));
-    }
 
     /**
      * Creates and lays out all the Swing GUI components.
@@ -102,7 +154,7 @@ public class MaintenanceLog extends JFrame {
         add(tableScrollPane, BorderLayout.CENTER);
 
         // --- 2. The "Log New Issue" Form (SOUTH) ---
-        // We now use GridBagLayout for a clean form
+        // ... (This GUI code is identical to the previous in-memory version)
         JPanel inputPanel = new JPanel(new GridBagLayout());
         inputPanel.setBackground(COLOR_PANEL_BG);
         inputPanel.setBorder(BorderFactory.createTitledBorder(
@@ -112,48 +164,35 @@ public class MaintenanceLog extends JFrame {
                 FONT_LABEL));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 10, 5, 10); // Padding around components
-        gbc.anchor = GridBagConstraints.WEST; // Left-align labels
+        gbc.insets = new Insets(5, 10, 5, 10);
+        gbc.anchor = GridBagConstraints.WEST;
 
-        // Row 0: Equipment Label
-        gbc.gridx = 0;
-        gbc.gridy = 0;
+        // Row 0: Equipment
+        gbc.gridx = 0; gbc.gridy = 0;
         JLabel equipLabel = new JLabel("Equipment:");
         equipLabel.setFont(FONT_LABEL);
         inputPanel.add(equipLabel, gbc);
 
-        // Row 0: Equipment ComboBox
-        gbc.gridx = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0; // Make component stretch
+        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
         equipmentCombo = new JComboBox<>();
         equipmentCombo.setFont(FONT_COMPONENT);
         inputPanel.add(equipmentCombo, gbc);
 
-        // Row 1: Issue Type Label
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0.0;
+        // Row 1: Issue Type
+        gbc.gridx = 0; gbc.gridy = 1; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0.0;
         JLabel issueLabel = new JLabel("Issue Type:");
         issueLabel.setFont(FONT_LABEL);
         inputPanel.add(issueLabel, gbc);
 
-        // Row 1: Issue Type ComboBox
-        gbc.gridx = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
+        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
         String[] issueTypes = {"need cleaning", "repair", "replacement"};
         issueTypeCombo = new JComboBox<>(issueTypes);
         issueTypeCombo.setFont(FONT_COMPONENT);
         inputPanel.add(issueTypeCombo, gbc);
 
         // Row 2: Submit Button
-        gbc.gridx = 1;
-        gbc.gridy = 2;
-        gbc.anchor = GridBagConstraints.EAST; // Right-align button
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0.0;
+        gbc.gridx = 1; gbc.gridy = 2; gbc.anchor = GridBagConstraints.EAST;
+        gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0.0;
         submitButton = new JButton("Submit New Log");
         submitButton.setFont(FONT_LABEL);
         inputPanel.add(submitButton, gbc);
@@ -163,25 +202,28 @@ public class MaintenanceLog extends JFrame {
         // --- 3. Add Event Listeners (The "Actions") ---
         submitButton.addActionListener(e -> logNewIssue());
 
-        // This is the new part: Double-click a row to open the UPDATE dialog
         maintenanceTable.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) { // Double-click
                     int selectedRow = maintenanceTable.getSelectedRow();
                     if (selectedRow != -1) {
+
+                        // Get data directly from the table model
                         int reportId = (int) tableModel.getValueAt(selectedRow, 0);
+                        String equipName = (String) tableModel.getValueAt(selectedRow, 1);
+                        String currentStatus = (String) tableModel.getValueAt(selectedRow, 5);
 
-                        // Find the log entry in our list
-                        MaintenanceLogEntry entryToUpdate = findEntryById(reportId);
+                        // Get cost, handling "N/A"
+                        double currentCost = 0.0;
+                        Object costObj = tableModel.getValueAt(selectedRow, 6);
+                        if(costObj instanceof Number) {
+                            currentCost = ((Number) costObj).doubleValue();
+                        }
 
-                        if (entryToUpdate != null) {
-                            if (entryToUpdate.getStatus().equals("resolved")) {
-                                JOptionPane.showMessageDialog(MaintenanceLog.this,
-                                        "This issue is already resolved.", "Cannot Update", JOptionPane.INFORMATION_MESSAGE);
-                            } else {
-                                // Open the new, clean update dialog
-                                openUpdateDialog(entryToUpdate);
-                            }
+                        if (currentStatus.equals("resolved")) {
+                            showMessage("Cannot Update", "This issue is already resolved.", JOptionPane.INFORMATION_MESSAGE);
+                        } else {
+                            openUpdateDialog(reportId, equipName, currentStatus, currentCost);
                         }
                     }
                 }
@@ -194,74 +236,123 @@ public class MaintenanceLog extends JFrame {
     }
 
     /**
-     * OPERATION 1: View Maintenance History (Reads from ArrayList)
+     * OPERATION 1: View Maintenance History (Reads from SQL)
      */
     private void loadMaintenanceLogs() {
-        // ... (Same as before)
-        tableModel.setRowCount(0);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        for (MaintenanceLogEntry entry : logEntries) {
-            tableModel.addRow(new Object[]{
-                    entry.getReportId(),
-                    entry.getEquipment().getName(),
-                    entry.getEquipment().getCategory(),
-                    entry.getIssueType(),
-                    sdf.format(entry.getReportDate()),
-                    entry.getStatus(),
-                    entry.getCost() == 0 ? "N/A" : entry.getCost()
-            });
+        tableModel.setRowCount(0); // Clear existing table
+
+        // Your SQL query based on the proposal
+        String sql = "SELECT m.ReportID, e.EquipmentName, e.Category, m.IssueType, m.ReportDate, m.Status, m.MaintenanceCost " +
+                "FROM MaintenanceTracker m " +
+                "JOIN Equipments e ON m.EquipmentID = e.EquipmentID";
+
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                int reportId = rs.getInt("ReportID");
+                String equipName = rs.getString("EquipmentName");
+                String category = rs.getString("Category");
+                String issueType = rs.getString("IssueType");
+                Date reportDate = rs.getDate("ReportDate");
+                String status = rs.getString("Status");
+                double cost = rs.getDouble("MaintenanceCost");
+
+                tableModel.addRow(new Object[]{
+                        reportId,
+                        equipName,
+                        category,
+                        issueType,
+                        reportDate,
+                        status,
+                        cost == 0 ? "N/A" : cost
+                });
+            }
+
+        } catch (SQLException e) {
+            showErrorDialog("Error Loading Logs", "Could not load maintenance history from database:\n" + e.getMessage());
         }
     }
 
     /**
-     * Helper method to populate the Equipment dropdown (Reads from ArrayList)
+     * Helper method to populate the Equipment dropdown (Reads from SQL)
      */
     private void loadEquipmentDropdown() {
-        // ... (Same as before)
-        equipmentCombo.removeAllItems();
-        for (EquipmentItem item : equipmentList) {
-            equipmentCombo.addItem(item);
+        equipmentCombo.removeAllItems(); // Clear existing
+
+        String sql = "SELECT EquipmentID, EquipmentName, Category FROM Equipments";
+
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                // Create an EquipmentItem (from our inner class) and add it
+                EquipmentItem item = new EquipmentItem(
+                        rs.getInt("EquipmentID"),
+                        rs.getString("EquipmentName"),
+                        rs.getString("Category")
+                );
+                equipmentCombo.addItem(item);
+            }
+
+        } catch (SQLException e) {
+            showErrorDialog("Error Loading Equipment", "Could not load equipment list from database:\n" + e.getMessage());
         }
     }
 
     /**
-     * OPERATION 2: Log a New Issue (Adds to ArrayList)
+     * OPERATION 2: Log a New Issue (Writes to SQL)
      */
     private void logNewIssue() {
-        // ... (Same as before)
         EquipmentItem selectedEquipment = (EquipmentItem) equipmentCombo.getSelectedItem();
         String issueType = (String) issueTypeCombo.getSelectedItem();
+
         if (selectedEquipment == null) {
-            JOptionPane.showMessageDialog(this, "Please select an equipment.", "Warning", JOptionPane.WARNING_MESSAGE);
+            showMessage("Warning", "Please select an equipment.", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        int newId = nextReportId++;
-        MaintenanceLogEntry newEntry = new MaintenanceLogEntry(newId, selectedEquipment, issueType, new Date(), "in Progress", 0.0);
-        logEntries.add(newEntry);
-        JOptionPane.showMessageDialog(this, "New issue logged successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-        loadMaintenanceLogs();
+
+        // Use a PreparedStatement to prevent SQL injection
+        String sql = "INSERT INTO MaintenanceTracker (EquipmentID, IssueType, ReportDate, Status, MaintenanceCost) " +
+                "VALUES (?, ?, ?, 'in Progress', 0.0)";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, selectedEquipment.getId());
+            pstmt.setString(2, issueType);
+            pstmt.setDate(3, new java.sql.Date(new Date().getTime())); // Today's date
+
+            int rowsAffected = pstmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                showMessage("Success", "New issue logged successfully!", JOptionPane.INFORMATION_MESSAGE);
+                loadMaintenanceLogs(); // Refresh the main table
+            }
+
+        } catch (SQLException e) {
+            showErrorDialog("Error Logging Issue", "Could not save new log to database:\n" + e.getMessage());
+        }
     }
 
     /**
-     * OPERATION 3: Update an Issue (Modifies object in ArrayList)
-     * This now opens a dedicated JDialog, which is much cleaner.
+     * OPERATION 3: Update an Issue (Modifies SQL)
      */
-    private void openUpdateDialog(MaintenanceLogEntry entryToUpdate) {
+    private void openUpdateDialog(int reportId, String equipName, String currentStatus, double currentCost) {
 
         // 1. Create the new dialog window
-        JDialog updateDialog = new JDialog(this, "Update Issue (ID: " + entryToUpdate.getReportId() + ")", true); // 'true' makes it modal
+        JDialog updateDialog = new JDialog(this, "Update Issue (ID: " + reportId + ")", true);
         updateDialog.setSize(500, 350);
         updateDialog.setLayout(new BorderLayout());
-        updateDialog.setLocationRelativeTo(this); // Center it
+        updateDialog.setLocationRelativeTo(this);
 
-        // 2. Create the main form panel (like the screenshot)
+        // 2. Create the main form panel
+        // ... (GUI code is identical to in-memory version)
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBorder(PADDING_BORDER);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Add form components
         // -- Row 0: Equipment (Read-only)
         gbc.gridx = 0; gbc.gridy = 0;
         JLabel equipLabel = new JLabel("Equipment:");
@@ -269,9 +360,9 @@ public class MaintenanceLog extends JFrame {
         formPanel.add(equipLabel, gbc);
 
         gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
-        JTextField equipField = new JTextField(entryToUpdate.getEquipment().getName());
+        JTextField equipField = new JTextField(equipName);
         equipField.setFont(FONT_COMPONENT);
-        equipField.setEditable(false); // Read-only
+        equipField.setEditable(false);
         formPanel.add(equipField, gbc);
 
         // -- Row 1: Status (Dropdown)
@@ -283,7 +374,7 @@ public class MaintenanceLog extends JFrame {
         gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
         JComboBox<String> statusCombo = new JComboBox<>(new String[]{"in Progress", "resolved"});
         statusCombo.setFont(FONT_COMPONENT);
-        statusCombo.setSelectedItem(entryToUpdate.getStatus());
+        statusCombo.setSelectedItem(currentStatus);
         formPanel.add(statusCombo, gbc);
 
         // -- Row 2: Maintenance Cost (Text Field)
@@ -293,7 +384,7 @@ public class MaintenanceLog extends JFrame {
         formPanel.add(costLabel, gbc);
 
         gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
-        JTextField costField = new JTextField(String.valueOf(entryToUpdate.getCost()));
+        JTextField costField = new JTextField(String.valueOf(currentCost));
         costField.setFont(FONT_COMPONENT);
         formPanel.add(costField, gbc);
 
@@ -314,21 +405,28 @@ public class MaintenanceLog extends JFrame {
                 double cost = Double.parseDouble(costField.getText());
                 String status = (String) statusCombo.getSelectedItem();
 
-                // Update the original object
-                entryToUpdate.setStatus(status);
-                entryToUpdate.setCost(cost);
+                // --- THIS IS THE SQL UPDATE ---
+                String sql = "UPDATE MaintenanceTracker SET Status = ?, MaintenanceCost = ? WHERE ReportID = ?";
+                try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                    pstmt.setString(1, status);
+                    pstmt.setDouble(2, cost);
+                    pstmt.setInt(3, reportId);
 
-                JOptionPane.showMessageDialog(updateDialog, "Update Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    pstmt.executeUpdate();
 
-                updateDialog.dispose(); // Close this window
-                loadMaintenanceLogs(); // Refresh the main table
+                    showMessage("Success", "Update Successful!", JOptionPane.INFORMATION_MESSAGE);
+                    updateDialog.dispose(); // Close this window
+                    loadMaintenanceLogs(); // Refresh the main table
+                } catch (SQLException ex) {
+                    showErrorDialog("Database Update Error", "Could not update the log:\n" + ex.getMessage());
+                }
 
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(updateDialog, "Invalid cost. Please enter a number (e.g., 150.50).", "Input Error", JOptionPane.ERROR_MESSAGE);
+                showMessage("Input Error", "Invalid cost. Please enter a number (e.g., 150.50).", JOptionPane.ERROR_MESSAGE);
             }
         });
 
-        cancelButton.addActionListener(e -> updateDialog.dispose()); // Just close the window
+        cancelButton.addActionListener(e -> updateDialog.dispose());
 
         // 5. Add panels to the dialog and make it visible
         updateDialog.add(formPanel, BorderLayout.CENTER);
@@ -336,61 +434,50 @@ public class MaintenanceLog extends JFrame {
         updateDialog.setVisible(true);
     }
 
-    // Helper method to find an entry by its ID
-    private MaintenanceLogEntry findEntryById(int reportId) {
-        for (MaintenanceLogEntry entry : logEntries) {
-            if (entry.getReportId() == reportId) {
-                return entry;
-            }
-        }
-        return null; // Should not happen if table is correct
+    // --- Helper methods for showing messages ---
+    private void showMessage(String title, String message, int messageType) {
+        JOptionPane.showMessageDialog(this, message, title, messageType);
+    }
+
+    private void showErrorDialog(String title, String message) {
+        JOptionPane.showMessageDialog(this, message, title, JOptionPane.ERROR_MESSAGE);
     }
 
 
-    // --- Inner class to store Equipment (replaces Equipments table) ---
+    /**
+     * Inner class to store Equipment (still useful for the ComboBox).
+     * This class maps directly to your Equipments table.
+     */
     private class EquipmentItem {
-        // ... (Same as before)
         private int id;
         private String name;
         private String category;
+
         public EquipmentItem(int id, String name, String category) {
-            this.id = id; this.name = name; this.category = category;
+            this.id = id;
+            this.name = name;
+            this.category = category;
         }
+
         public int getId() { return id; }
         public String getName() { return name; }
         public String getCategory() { return category; }
-        @Override
-        public String toString() { return name; }
-    }
 
-    // --- Inner class to store a Log Entry (replaces MaintenanceTracker table) ---
-    private class MaintenanceLogEntry {
-        // ... (Same as before)
-        private int reportId;
-        private EquipmentItem equipment;
-        private String issueType;
-        private Date reportDate;
-        private String status;
-        private double cost;
-        public MaintenanceLogEntry(int reportId, EquipmentItem equipment, String issueType, Date reportDate, String status, double cost) {
-            this.reportId = reportId; this.equipment = equipment; this.issueType = issueType;
-            this.reportDate = reportDate; this.status = status; this.cost = cost;
+        // This is what the JComboBox displays
+        @Override
+        public String toString() {
+            return name;
         }
-        public int getReportId() { return reportId; }
-        public EquipmentItem getEquipment() { return equipment; }
-        public String getIssueType() { return issueType; }
-        public Date getReportDate() { return reportDate; }
-        public String getStatus() { return status; }
-        public double getCost() { return cost; }
-        public void setStatus(String status) { this.status = status; }
-        public void setCost(double cost) { this.cost = cost; }
     }
 
     /**
-     * This is the main method to run the application.
+     * This main method is for standalone testing.
+     * It calls the no-argument constructor.
      */
     public static void main(String[] args) {
-        // Run the GUI creation on the Event Dispatch Thread (EDT)
-        SwingUtilities.invokeLater(() -> new MaintenanceLog());
+        SwingUtilities.invokeLater(() -> {
+            MaintenanceLog standaloneWindow = new MaintenanceLog();
+            standaloneWindow.setVisible(true); // Make it visible
+        });
     }
 }
