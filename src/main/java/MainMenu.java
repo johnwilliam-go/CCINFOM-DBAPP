@@ -28,10 +28,6 @@ public class MainMenu extends JFrame implements ActionListener {
         FrequentStation = new JButton("Frequent Station");
         MaintenanceReport = new JButton("Maintenance Report");
 
-
-
-
-
         button1.addActionListener(this);
         button2.addActionListener(this);
         button3.addActionListener(this);

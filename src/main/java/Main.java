@@ -12,7 +12,8 @@ public class Main {
         );
 
 
-        //hard coded so everytime a user inputs a record, these data will be generated (just an example)
+        // THIS IS HOW YOU INTEGRATE JAVA AND SQL SO THAT YOU CAN DO CAN MAKE A QUERY IN JAVA
+        // THIS IS HARDCODED BTW
         Statement statement = connection.createStatement();
         String sql = "INSERT INTO equipments (EquipmentName, Category, Brand, Description, SupplierName, ContactNumber, EmailAddress) " +
                 "VALUES ('Grill #1', 'Grill', 'ShineLong', '', '', '09372738203', 'shinelongph@gmail.com')";
