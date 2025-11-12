@@ -110,7 +110,7 @@ CREATE TABLE MaintenanceTracker (
     FOREIGN KEY (ReportedBy) REFERENCES KitchenStaff(StaffID)
 );
 
--- ✅ Trigger to randomize PreparedBy
+--  Trigger to randomize PreparedBy
 DELIMITER //
 CREATE TRIGGER random_preparedby
 BEFORE INSERT ON OrderEntries
