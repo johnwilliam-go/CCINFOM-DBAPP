@@ -91,12 +91,15 @@ public class MainMenu extends JFrame implements ActionListener {
         }
         else if (e.getSource() == button4) {
             this.setVisible(false);
-            MaintenanceLog maintenanceWindow = new MaintenanceLog();
+            MaintenanceLog maintenanceWindow = new MaintenanceLog(this);
             maintenanceWindow.setVisible(true);
+        }
+        else if (e.getSource() == MaintenanceReport) { // Or whatever your button is named
+            this.setVisible(false);
 
-            //JOptionPane.showMessageDialog(null,
-                    //"Edit through reportID and add information like description (if you have alr), priority, status" +
-                            //"\nTable affected: maintenancetracker");
+            // This calls the "module" constructor for your new report
+            MaintenanceReport reportWindow = new MaintenanceReport(this);
+            reportWindow.setVisible(true);
         }
 
         // Report #1
