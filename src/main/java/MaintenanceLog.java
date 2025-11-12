@@ -216,7 +216,7 @@ public class MaintenanceLog extends JFrame {
         inputPanel.add(new JLabel("Issue Type:") {{ setFont(FONT_LABEL); }}, gbc);
 
         gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
-        issueTypeCombo = new JComboBox<>(new String[]{"need cleaning", "repair", "replacement"}); // From proposal
+        issueTypeCombo = new JComboBox<>(new String[]{"Cleaning", "Repair", "Replacement", "Others (In Description)"}); // From proposal
         issueTypeCombo.setFont(FONT_COMPONENT);
         inputPanel.add(issueTypeCombo, gbc);
 

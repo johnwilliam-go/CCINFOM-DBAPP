@@ -22,7 +22,7 @@ public class MaintenanceReport extends JFrame {
 
     // --- GUI Components ---
     private JComboBox<String> reportTypeCombo;
-    private JComboBox<Integer> yearCombo;
+    private JTextField yearField;
     private JComboBox<String> monthCombo;
     private JButton generateButton;
     private JButton backButton;
@@ -33,6 +33,7 @@ public class MaintenanceReport extends JFrame {
     private JTable allLogsTable;
     private DefaultTableModel allLogsModel;
     private JLabel totalCostLabel;
+    private JTextArea descriptionDisplayArea; // NEW
 
     // --- Fonts and Colors ---
     private static final Font FONT_LABEL = new Font("Segoe UI", Font.BOLD, 14);
@@ -151,13 +152,11 @@ public class MaintenanceReport extends JFrame {
         filterPanel.add(reportTypeCombo);
 
         filterPanel.add(new JLabel("Year:") {{ setFont(FONT_LABEL); }});
-        yearCombo = new JComboBox<>();
-        yearCombo.setFont(FONT_COMPONENT);
-        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-        for (int i = currentYear; i >= 2020; i--) {
-            yearCombo.addItem(i);
-        }
-        filterPanel.add(yearCombo);
+        yearField = new JTextField(5); // 5 columns wide
+        yearField.setFont(FONT_COMPONENT);
+        // Set default text to the current year
+        yearField.setText(String.valueOf(Calendar.getInstance().get(Calendar.YEAR)));
+        filterPanel.add(yearField);
 
         filterPanel.add(new JLabel("Month:") {{ setFont(FONT_LABEL); }});
         monthCombo = new JComboBox<>(new String[]{"01 - Jan", "02 - Feb", "03 - Mar", "04 - Apr", "05 - May", "06 - Jun", "07 - Jul", "08 - Aug", "09 - Sep", "10 - Oct", "11 - Nov", "12 - Dec"});
@@ -203,18 +202,32 @@ public class MaintenanceReport extends JFrame {
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, mostReportedPane, allLogsPane);
         splitPane.setResizeWeight(0.33); // Give top table 1/3 of the space
 
-        // --- 4. The Total Cost Display (SOUTH) ---
-        JPanel summaryPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        summaryPanel.setBackground(COLOR_PANEL_BG);
-        summaryPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        // --- 4. The Details Panel (SOUTH) ---
+        JPanel detailsPanel = new JPanel(new BorderLayout(10, 10));
+        detailsPanel.setBackground(COLOR_PANEL_BG);
+        detailsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        // Total Cost Label (at the top of the south panel)
         totalCostLabel = new JLabel("Total Cost of Resolved Maintenance: ");
         totalCostLabel.setFont(FONT_TOTAL_COST);
-        summaryPanel.add(totalCostLabel);
+        detailsPanel.add(totalCostLabel, BorderLayout.NORTH);
+
+        // Description Display Area (in the center of the south panel)
+        descriptionDisplayArea = new JTextArea(5, 20); // 5 rows
+        descriptionDisplayArea.setFont(FONT_COMPONENT);
+        descriptionDisplayArea.setLineWrap(true);
+        descriptionDisplayArea.setWrapStyleWord(true);
+        descriptionDisplayArea.setEditable(false);
+        descriptionDisplayArea.setText("Click a log in the 'All Logs' table above to see its description.");
+        JScrollPane descScrollPane = new JScrollPane(descriptionDisplayArea);
+        descScrollPane.setBorder(BorderFactory.createTitledBorder("Log Description"));
+        detailsPanel.add(descScrollPane, BorderLayout.CENTER);
+
 
         // --- 5. Add all panels to frame ---
         add(filterPanel, BorderLayout.NORTH);
         add(splitPane, BorderLayout.CENTER);
-        add(summaryPanel, BorderLayout.SOUTH);
+        add(detailsPanel, BorderLayout.SOUTH); // Use the new detailsPanel
         add(actionPanel, BorderLayout.EAST);
 
         // --- 6. Add Listeners ---
@@ -222,8 +235,43 @@ public class MaintenanceReport extends JFrame {
         generateButton.addActionListener(e -> generateReport());
         backButton.addActionListener(e -> handleGoBack());
 
+        // NEW: Add listener to the 'All Logs' table
+        allLogsTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) { // Prevents firing twice
+                loadDescriptionForSelectedLog();
+            }
+        });
+
         // Initialize filter controls
         updateFilterControls();
+    }
+
+    /**
+     * NEW: Fetches and displays the description for the currently selected log.
+     */
+    private void loadDescriptionForSelectedLog() {
+        int selectedRow = allLogsTable.getSelectedRow();
+        if (selectedRow == -1) {
+            descriptionDisplayArea.setText("Click a log in the 'All Logs' table above to see its description.");
+            return;
+        }
+
+        // Get the ReportID from the table model (it's in column 0)
+        int reportId = (int) allLogsModel.getValueAt(selectedRow, 0);
+
+        String sql = "SELECT Description FROM MaintenanceTracker WHERE ReportID = ?";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, reportId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                descriptionDisplayArea.setText(rs.getString("Description"));
+            } else {
+                descriptionDisplayArea.setText("Could not find description for Report ID: " + reportId);
+            }
+        } catch (SQLException e) {
+            descriptionDisplayArea.setText("Error loading description:\n" + e.getMessage());
+        }
     }
 
     /**
@@ -234,13 +282,13 @@ public class MaintenanceReport extends JFrame {
         if (reportType == null) return;
 
         if (reportType.equals("Monthly")) {
-            yearCombo.setEnabled(true);
+            yearField.setEditable(true);
             monthCombo.setEnabled(true);
         } else if (reportType.equals("Yearly")) {
-            yearCombo.setEnabled(true);
+            yearField.setEditable(true);
             monthCombo.setEnabled(false);
         } else { // All Time
-            yearCombo.setEnabled(false);
+            yearField.setEditable(false);
             monthCombo.setEnabled(false);
         }
     }
@@ -260,13 +308,25 @@ public class MaintenanceReport extends JFrame {
      */
     private void generateReport() {
         String reportType = (String) reportTypeCombo.getSelectedItem();
-        int year = (int) yearCombo.getSelectedItem();
         int month = monthCombo.getSelectedIndex() + 1; // 1-based index (1=Jan, 12=Dec)
+
+        // NEW: Parse the year from the text field with error handling
+        int year;
+        try {
+            year = Integer.parseInt(yearField.getText());
+            if (year < 1970 || year > 2100) { // Basic sanity check
+                throw new NumberFormatException("Year out of reasonable range.");
+            }
+        } catch (NumberFormatException e) {
+            showErrorDialog("Invalid Year", "Please enter a valid 4-digit year (e.g., 2024).");
+            return;
+        }
 
         // Clear all old data
         mostReportedModel.setRowCount(0);
         allLogsModel.setRowCount(0);
         totalCostLabel.setText("Total Cost of Resolved Maintenance: ");
+        descriptionDisplayArea.setText("Click a log in the 'All Logs' table to see its description."); // NEW
 
         // We will build a dynamic WHERE clause
         String whereClause = "";
