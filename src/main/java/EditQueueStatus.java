@@ -25,7 +25,8 @@ public class EditQueueStatus extends JFrame implements ActionListener {
         setLayout(new BorderLayout());
 
         model = new javax.swing.table.DefaultTableModel(
-                new String[]{"KotID", "Customer", "OrderType", "Status"},
+                new String[]{"OrderEntryID", "Customer", "OrderType", "Status"},
+
                 0
         ) {
             @Override
@@ -69,19 +70,19 @@ public class EditQueueStatus extends JFrame implements ActionListener {
              Statement stmt = conn.createStatement()) {
 
             String sql =
-                    "SELECT kot.KotID, kot.CustomerName, kot.OrderType, ent.OrderStatus " +
+                    "SELECT ent.KOTItemID, kot.CustomerName, kot.OrderType, ent.OrderStatus " +
                             "FROM KitchenOrderTicket kot " +
                             "JOIN OrderEntries ent ON kot.KotID = ent.KotID " +
-                            "WHERE ent.OrderStatus IN ('Pending', 'In The Kitchen', 'Ready')";
+                            "WHERE ent.OrderStatus = 'In The Kitchen'";
 
             ResultSet rs = stmt.executeQuery(sql);
 
             while (rs.next()) {
-                int kotID = rs.getInt("KotID");
+                int orderEntryID = rs.getInt("KOTItemID");
                 String customer = rs.getString("CustomerName");
                 String orderType = rs.getString("OrderType");
                 String status = rs.getString("OrderStatus");
-                model.addRow(new Object[]{kotID, customer, orderType, status});
+                model.addRow(new Object[]{orderEntryID, customer, orderType, status});
             }
 
             rs.close();
@@ -92,7 +93,6 @@ public class EditQueueStatus extends JFrame implements ActionListener {
             JOptionPane.showMessageDialog(this, "Database error: " + e.getMessage());
         }
     }
-
 
     private void updateOrderStatus() {
         int selectedRow = orderTable.getSelectedRow();
@@ -109,32 +109,37 @@ public class EditQueueStatus extends JFrame implements ActionListener {
             return;
         }
 
-        int kotID = (int) model.getValueAt(selectedRow, 0);
+        int orderEntryID = (int) model.getValueAt(selectedRow, 0);
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              Statement stmt = conn.createStatement()) {
 
-            String updateOrder =
-                    "UPDATE OrderEntries SET OrderStatus = '" + nextStatus + "' " +
-                            (nextStatus.equals("Completed") ? ", TimeCompleted = NOW()" : "") +
-                            " WHERE KotID = " + kotID;
-            stmt.executeUpdate(updateOrder);
+            int kotID = -1;
+            ResultSet rsKot = stmt.executeQuery("SELECT KotID FROM OrderEntries WHERE KOTItemID = " + orderEntryID);
+            if (rsKot.next()) {
+                kotID = rsKot.getInt("KotID");
+            }
+            rsKot.close();
 
-            if (nextStatus.equals("Completed")) {
-                String updateTicket =
-                        "UPDATE KitchenOrderTicket SET ActualOrderCompleted = NOW() WHERE KotID = " + kotID;
-                stmt.executeUpdate(updateTicket);
-
-                String insertLog =
-                        "INSERT INTO ActivityLog (KotID, OrderEntryID, ItemID, Quantity, StationID, UsageTime) " +
-                                "SELECT e.KotID, e.KOTItemID, e.ItemID, e.Quantity, m.StationID, NOW() " +
-                                "FROM OrderEntries e JOIN MenuItems m ON e.ItemID = m.ItemID " +
-                                "WHERE e.KotID = " + kotID;
-                stmt.executeUpdate(insertLog);
+            if (kotID == -1) {
+                JOptionPane.showMessageDialog(this, "No matching KotID found for this entry.");
+                return;
             }
 
+            String updateOrder =
+                    "UPDATE OrderEntries SET OrderStatus = '" + nextStatus + "', TimeCompleted = NOW() " +
+                            "WHERE KOTItemID = " + orderEntryID;
+            stmt.executeUpdate(updateOrder);
+
+            String insertLog =
+                    "INSERT INTO ActivityLog (KotID, OrderEntryID, ItemID, Quantity, StationID, UsageTime) " +
+                            "SELECT e.KotID, e.KOTItemID, e.ItemID, e.Quantity, m.StationID, NOW() " +
+                            "FROM OrderEntries e JOIN MenuItems m ON e.ItemID = m.ItemID " +
+                            "WHERE e.KOTItemID = " + orderEntryID;
+            stmt.executeUpdate(insertLog);
+
             JOptionPane.showMessageDialog(this,
-                    "Order #" + kotID + " status changed to " + nextStatus);
+                    "Order #" + orderEntryID + " has been marked as " + nextStatus + ".");
             loadActiveOrders();
 
         } catch (SQLException ex) {
@@ -144,11 +149,7 @@ public class EditQueueStatus extends JFrame implements ActionListener {
 
     private String getNextStatus(String currentStatus) {
         switch (currentStatus) {
-            case "Pending":
-                return "In The Kitchen";
             case "In The Kitchen":
-                return "Completed";
-            case "Ready":   // optional alias
                 return "Completed";
             default:
                 return currentStatus;
