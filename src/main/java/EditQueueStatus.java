@@ -178,4 +178,14 @@ public class EditQueueStatus extends JFrame implements ActionListener {
         });
     }
 
+    //DB correction: preptime must be in the orderentries not kitchenorder ticket
+
+    //DB changes: considering to remove usage time.
+
+
+    // my comments...
+    //subtract ordertime and ordercompleted and you will have your preperation time in the orderentries (make it automatic)
+    //one of the column should be orderentryid since similar kotid edits status at the same time
+
+
 }

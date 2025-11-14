@@ -1,25 +1,51 @@
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import javax.swing.*;
 
-public class Main {
+public class Main extends JFrame implements ActionListener {
+    Main(){
+        setTitle("Cloud Kitchen Database");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setResizable(false);
+        setSize(800,600);
+        setVisible(true);
+
+        JButton orders =  new JButton("");
+        orders.setBounds(0,0,800,140);
+        orders.addActionListener(this);
+        add(orders);
+
+        JButton reports =  new JButton("");
+        reports.setBounds(0,140,800,140);
+        reports.addActionListener(this);
+        add(reports);
+
+        JButton staffs =  new JButton("");
+        staffs.setBounds(0,280,800,140);
+        staffs.addActionListener(this);
+        add(staffs);
+
+        JButton maintenance =  new JButton("");
+        maintenance.setBounds(0,420,800,140);
+        maintenance .addActionListener(this);
+        add(maintenance);
+
+
+
+    }
+
+
     public static void main(String[] args) throws Exception {
-        Connection connection = DriverManager.getConnection(
-                "jdbc:mysql://127.0.0.1:3306/ccinfomdb",
-                "root",
-                "12345678"
-        );
+        new Main();
 
 
-        //hard coded so everytime a user inputs a record, these data will be generated (just an example)
-        Statement statement = connection.createStatement();
-        String sql = "INSERT INTO equipments (EquipmentName, Category, Brand, Description, SupplierName, ContactNumber, EmailAddress) " +
-                "VALUES ('Grill #1', 'Grill', 'ShineLong', '', '', '09372738203', 'shinelongph@gmail.com')";
-        statement.executeUpdate(sql);
-        statement.close();
-        connection.close();
+    }
 
-        System.out.println("Data inserted successfully!");
+    @Override
+    public void actionPerformed(ActionEvent e) {
+
     }
 }

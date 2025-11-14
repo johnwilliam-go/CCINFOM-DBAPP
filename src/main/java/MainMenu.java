@@ -108,3 +108,6 @@ public class MainMenu extends JFrame implements ActionListener {
     }
 }
 
+// 5/8 functions done (2 faulty)
+
+
