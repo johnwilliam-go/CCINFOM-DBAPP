@@ -80,10 +80,11 @@ public class MainMenu extends JFrame implements ActionListener {
             new AddAnOrder(this);
         }
         else if (e.getSource() == button2) {
-            JOptionPane.showMessageDialog(null,
-                    "Set the order status to ready for each order line." +
-                            "\ntables affected: orderentries");
+            this.setVisible(false);
+            EditQueueStatus editQueue = new EditQueueStatus(this);
+            editQueue.setVisible(true);
         }
+
         else if (e.getSource() == button3) {
             JOptionPane.showMessageDialog(null,
                     "Insert equipmentid, issuetype, priority, description, and reported by" +

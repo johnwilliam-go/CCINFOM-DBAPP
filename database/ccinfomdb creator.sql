@@ -35,7 +35,7 @@ CREATE TABLE KitchenStaff (
     EmploymentStatus ENUM('Active', 'On Leave', 'Resigned') DEFAULT 'Active'
 );
 
--- 4. Kitchen Order Ticket
+-- 4. Kitchen Order Ticket (simplified)
 CREATE TABLE KitchenOrderTicket (
     KotID INT PRIMARY KEY AUTO_INCREMENT,
     CustomerName VARCHAR(100) NOT NULL,
@@ -45,13 +45,10 @@ CREATE TABLE KitchenOrderTicket (
     PaymentMethod VARCHAR(50),
     OrderTime TIME NOT NULL DEFAULT (CURRENT_TIME()),
     OrderDate DATE NOT NULL DEFAULT (CURRENT_DATE()),
-    PreparationTime INT,
-    ExpectedOrderCompleted TIME,
-    ActualOrderCompleted TIME,
     OrderDetails TEXT
 );
 
--- 5. Order Entries
+-- 5. Order Entries (with OrderTime + PreparationTime)
 CREATE TABLE OrderEntries (
     KOTItemID INT PRIMARY KEY AUTO_INCREMENT,
     KotID INT NOT NULL,
@@ -60,7 +57,8 @@ CREATE TABLE OrderEntries (
     Quantity INT,
     CookingNotes VARCHAR(100),
     OrderStatus ENUM('In The Kitchen', 'Completed') DEFAULT 'In The Kitchen',
-    PreparationTime TIME,
+    OrderTime TIME,  -- Added from KitchenOrderTicket
+    PreparationTime INT,  -- Moved here
     TimeCompleted TIME,
     FOREIGN KEY (KotID) REFERENCES KitchenOrderTicket(KotID),
     FOREIGN KEY (ItemID) REFERENCES MenuItems(ItemID),
@@ -110,18 +108,29 @@ CREATE TABLE MaintenanceTracker (
     FOREIGN KEY (ReportedBy) REFERENCES KitchenStaff(StaffID)
 );
 
--- ✅ Trigger to randomize PreparedBy
+-- Trigger to randomize PreparedBy and copy OrderTime
 DELIMITER //
 CREATE TRIGGER random_preparedby
 BEFORE INSERT ON OrderEntries
 FOR EACH ROW
 BEGIN
     DECLARE randomStaff INT;
+    DECLARE kotTime TIME;
+
+    -- Pick a random staff
     SELECT StaffID INTO randomStaff
     FROM KitchenStaff
     ORDER BY RAND()
     LIMIT 1;
+
+    -- Get the OrderTime from the related KitchenOrderTicket
+    SELECT OrderTime INTO kotTime
+    FROM KitchenOrderTicket
+    WHERE KotID = NEW.KotID;
+
+    -- Set both random PreparedBy and the OrderTime
     SET NEW.PreparedBy = randomStaff;
+    SET NEW.OrderTime = kotTime;
 END;
 //
 DELIMITER ;
