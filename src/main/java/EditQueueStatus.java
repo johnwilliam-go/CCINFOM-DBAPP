@@ -5,24 +5,25 @@ import java.sql.*;
 import javax.swing.table.DefaultTableModel;
 
 
-
-public class EditQueueStatus extends JFrame implements ActionListener {
+public class EditQueueStatus implements ActionListener {
     // Database connection constants
     private static final String DB_URL = "jdbc:mysql://127.0.0.1:3306/ccinfomdb";
     private static final String DB_USER = "root";
     private static final String DB_PASS = "12345678";
 
     private JTable orderTable;
+    private JPanel editQueueStatusPanel;
     private JButton updateButton, refreshButton, backButton;
     private DefaultTableModel model;
-    private MainMenu mainMenu; // to go back
+    private Main main; // to go back
 
-    public EditQueueStatus(MainMenu mainMenu) {
-        this.mainMenu = mainMenu;
-        setTitle("Manage Active Orders");
-        setSize(900, 500);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
+    public EditQueueStatus(Main main) {
+        this.main = main;
+    }
+
+    public void showEditQueueStatus() {
+        editQueueStatusPanel = new JPanel(new BorderLayout());
+        editQueueStatusPanel.setSize(800, 600);
 
         model = new javax.swing.table.DefaultTableModel(
                 new String[]{"OrderEntryID", "Customer", "OrderType", "Status"},
@@ -37,14 +38,14 @@ public class EditQueueStatus extends JFrame implements ActionListener {
 
         orderTable = new JTable(model);
         JScrollPane scrollPane = new JScrollPane(orderTable);
-        add(scrollPane, BorderLayout.CENTER);
+        editQueueStatusPanel.add(scrollPane, BorderLayout.CENTER);
         JPanel buttonPanel = new JPanel();
 
         //Add Title Bar
         JLabel title = new JLabel("Manage Active Orders", SwingConstants.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 22));
         title.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-        add(title, BorderLayout.NORTH);
+        editQueueStatusPanel.add(title, BorderLayout.NORTH);
 
         updateButton = new JButton("Update Status");
         refreshButton = new JButton("Refresh");
@@ -53,15 +54,17 @@ public class EditQueueStatus extends JFrame implements ActionListener {
         buttonPanel.add(updateButton);
         buttonPanel.add(refreshButton);
         buttonPanel.add(backButton);
-        add(buttonPanel, BorderLayout.SOUTH);
+        editQueueStatusPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         updateButton.addActionListener(this);
         refreshButton.addActionListener(this);
         backButton.addActionListener(this);
 
-        setVisible(true);
         loadActiveOrders();
 
+        main.setContentPane(editQueueStatusPanel);
+        main.revalidate();
+        main.repaint();
     }
 
     private void loadActiveOrders() {
@@ -87,17 +90,17 @@ public class EditQueueStatus extends JFrame implements ActionListener {
 
             rs.close();
             if (model.getRowCount() == 0) {
-                JOptionPane.showMessageDialog(this, "No active orders found!");
+                JOptionPane.showMessageDialog(editQueueStatusPanel, "No active orders found!");
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Database error: " + e.getMessage());
+            JOptionPane.showMessageDialog(editQueueStatusPanel, "Database error: " + e.getMessage());
         }
     }
 
     private void updateOrderStatus() {
         int selectedRow = orderTable.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select an order first.");
+            JOptionPane.showMessageDialog(editQueueStatusPanel, "Please select an order first.");
             return;
         }
 
@@ -105,7 +108,7 @@ public class EditQueueStatus extends JFrame implements ActionListener {
         String nextStatus = getNextStatus(currentStatus);
 
         if (nextStatus.equals(currentStatus)) {
-            JOptionPane.showMessageDialog(this, "This order is already completed!");
+            JOptionPane.showMessageDialog(editQueueStatusPanel, "This order is already completed!");
             return;
         }
 
@@ -122,7 +125,7 @@ public class EditQueueStatus extends JFrame implements ActionListener {
             rsKot.close();
 
             if (kotID == -1) {
-                JOptionPane.showMessageDialog(this, "No matching KotID found for this entry.");
+                JOptionPane.showMessageDialog(editQueueStatusPanel, "No matching KotID found for this entry.");
                 return;
             }
 
@@ -138,12 +141,12 @@ public class EditQueueStatus extends JFrame implements ActionListener {
                             "WHERE e.KOTItemID = " + orderEntryID;
             stmt.executeUpdate(insertLog);
 
-            JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(editQueueStatusPanel,
                     "Order #" + orderEntryID + " has been marked as " + nextStatus + ".");
             loadActiveOrders();
 
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Database error: " + ex.getMessage());
+            JOptionPane.showMessageDialog(editQueueStatusPanel, "Database error: " + ex.getMessage());
         }
     }
 
@@ -160,8 +163,7 @@ public class EditQueueStatus extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == backButton) {
-            this.dispose();
-            mainMenu.setVisible(true);
+            main.showMainmenu();
 
         }else if (e.getSource() == refreshButton) {
             loadActiveOrders();
@@ -173,11 +175,11 @@ public class EditQueueStatus extends JFrame implements ActionListener {
 
     }
     // For standalone testing only
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new EditQueueStatus(null).setVisible(true);
-        });
-    }
+//    public static void main(String[] args) {
+//        SwingUtilities.invokeLater(() -> {
+//            new EditQueueStatus(null).setVisible(true);
+//        });
+//    }
 
     //DB correction: preptime must be in the orderentries not kitchenorder ticket
 

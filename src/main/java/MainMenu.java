@@ -77,24 +77,17 @@ public class MainMenu extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == button1) {
             this.setVisible(false);
-            new AddAnOrder(this);
         }
-        else if (e.getSource() == button2) {
-            this.setVisible(false);
-            EditQueueStatus editQueue = new EditQueueStatus(this);
-            editQueue.setVisible(true);
-        }
-
         else if (e.getSource() == button3) {
             JOptionPane.showMessageDialog(null,
                     "Insert equipmentid, issuetype, priority, description, and reported by" +
                     "\nTable affected: maintenancetracker");
         }
-        else if (e.getSource() == button4) {
-            this.setVisible(false);
-            MaintenanceLog maintenanceWindow = new MaintenanceLog(this);
-            maintenanceWindow.setVisible(true);
-        }
+//        else if (e.getSource() == button4) {
+//            this.setVisible(false);
+//            MaintenanceLog maintenanceWindow = new MaintenanceLog(this);
+//            maintenanceWindow.setVisible(true);
+//        }
         else if (e.getSource() == MaintenanceReport) { // Or whatever your button is named
             this.setVisible(false);
 
@@ -105,48 +98,7 @@ public class MainMenu extends JFrame implements ActionListener {
 
         // Report #1
         else if (e.getSource() == AvgOrderPrep) {
-            StringBuilder message = new StringBuilder();
-            message.append("Average Preparation Time per Item:\n\n");
 
-            String sql = """
-                SELECT 
-                    mi.ItemName,
-                    SEC_TO_TIME(AVG(TIME_TO_SEC(oe.PreparationTime))) AS AveragePrepTime
-                FROM 
-                    OrderEntries oe
-                JOIN 
-                    MenuItems mi ON oe.ItemID = mi.ItemID
-                GROUP BY 
-                    mi.ItemID, mi.ItemName
-                ORDER BY 
-                    AveragePrepTime DESC;
-            """;
-
-            try (Connection conn = DriverManager.getConnection(
-                    "jdbc:mysql://127.0.0.1:3306/ccinfomdb",
-                    "root",
-                    "12345678"
-            );
-                 PreparedStatement stmt = conn.prepareStatement(sql);
-                 ResultSet rs = stmt.executeQuery()) {
-
-                while (rs.next()) {
-                    String name = rs.getString("ItemName");
-                    String avgTime = rs.getString("AveragePrepTime");
-                    message.append(String.format("%-20s : %s%n", name, avgTime));
-                }
-
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-                message = new StringBuilder("Error retrieving data: " + ex.getMessage());
-            }
-
-            JOptionPane.showMessageDialog(
-                    null,
-                    message.toString(),
-                    "Average Preparation Time",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
         }
 
     }

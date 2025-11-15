@@ -47,7 +47,7 @@ public class MaintenanceLog extends JFrame {
     private static final Color COLOR_PANEL_BG = new Color(245, 245, 245);
     private static final Border PADDING_BORDER = new EmptyBorder(15, 15, 15, 15);
 
-    private MainMenu parentMenu;
+    private Main parentMenu;
 
     /**
      * Constructor 1: For Standalone Mode.
@@ -85,7 +85,7 @@ public class MaintenanceLog extends JFrame {
      * Constructor 2: For Module Mode.
      * @param parentMenu The MainMenu object that is launching this window.
      */
-    public MaintenanceLog(MainMenu parentMenu) {
+    public MaintenanceLog(Main parentMenu) {
         super("Maintenance Logging System (Janret Galvez)");
         this.parentMenu = parentMenu;
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
