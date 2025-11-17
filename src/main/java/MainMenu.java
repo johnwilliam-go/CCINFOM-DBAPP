@@ -92,7 +92,7 @@ public class MainMenu extends JFrame implements ActionListener {
             this.setVisible(false);
 
             // This calls the "module" constructor for your new report
-            MaintenanceReport reportWindow = new MaintenanceReport(this);
+            MaintenanceReport reportWindow = new MaintenanceReport(null);
             reportWindow.setVisible(true);
         }
 

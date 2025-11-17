@@ -7,15 +7,15 @@ import java.sql.*;
 
 public class ViewReportsPage extends JPanel implements ActionListener {
     JPanel container, buttonsPanel, datePanel, rightPanel;
-    CardLayout cardLayout;
     JComboBox<String> yearCombo, monthCombo;
-    JButton avgOrderPrepTime, salesReveneue, frequentStation, goBack;
+    JButton avgOrderPrepTime, salesReveneue, frequentStation, goBack, mostReportedEquipment;
     Main main;
-    MaintenanceLog maintenanceLog;
-    MaintenanceReport maintenanceReport;
     JButton viewReports;
     String option = "";
     JTextArea text;
+    JTable table;
+    DefaultTableModel model;
+    JScrollPane scrollPane;
 
 
     ViewReportsPage(Main main) {
@@ -24,62 +24,70 @@ public class ViewReportsPage extends JPanel implements ActionListener {
 
     public void showViewReportsButton() {
 
-        container = new JPanel(new BorderLayout());
+        container = new JPanel(null);
 
         buttonsPanel = new JPanel(null);
-        buttonsPanel.setPreferredSize(new Dimension(200, 600));
+        buttonsPanel.setBounds(0,0,250,600);
 
         avgOrderPrepTime = new JButton("Average preptime");
-        avgOrderPrepTime.setBounds(0, 100, 150, 50);
+        avgOrderPrepTime.setBounds(20, 50, 150, 50);
         avgOrderPrepTime.addActionListener(this);
         buttonsPanel.add(avgOrderPrepTime);
 
         salesReveneue = new JButton("Sales reveneue");
-        salesReveneue.setBounds(0, 200, 150, 50);
+        salesReveneue.setBounds(20, 125, 150, 50);
         salesReveneue.addActionListener(this);
         buttonsPanel.add(salesReveneue);
 
         frequentStation = new JButton("Frequent station");
-        frequentStation.setBounds(0, 300, 150, 50);
+        frequentStation.setBounds(20, 200, 150, 50);
         frequentStation.addActionListener(this);
         buttonsPanel.add(frequentStation);
 
+        mostReportedEquipment = new JButton("Maintenance Reports");
+        mostReportedEquipment.setBounds(20, 275, 150, 50);
+        mostReportedEquipment.addActionListener(this);
+        buttonsPanel.add(mostReportedEquipment);
+
         goBack = new JButton("Go Back");
-        goBack.setBounds(0, 400, 150, 50);
+        goBack.setBounds(20, 350, 150, 50);
         goBack.addActionListener(this);
         buttonsPanel.add(goBack);
 
-        rightPanel = new JPanel();
-        rightPanel.setLayout(null);
-        rightPanel.setBackground(Color.BLACK);
-        rightPanel.setPreferredSize(new Dimension(500, 500));
+        rightPanel = new JPanel(null);
+        rightPanel.setBounds(250, 30, 500, 450);
+
+        model = new DefaultTableModel();
+        table = new JTable(model);
+        scrollPane = new JScrollPane(table);
+        scrollPane.setBounds(0, 0, 500, 450);
+        rightPanel.add(scrollPane);
 
 
-        container.add(buttonsPanel, BorderLayout.WEST);
-        container.add(rightPanel, BorderLayout.CENTER);
+        container.add(buttonsPanel);
+        container.add(rightPanel);
 
-        datePanel = new JPanel();
-        datePanel.setPreferredSize(new Dimension(500, 100));
+        datePanel = new JPanel(null);
+        datePanel.setBounds(300, 500, 500, 100);
 
         String[] years = new String[20];
         int currentYear = java.time.LocalDate.now().getYear();
         for (int i = 0; i < years.length; i++) years[i] = String.valueOf(currentYear-i);
         yearCombo = new JComboBox<>(years);
-        yearCombo.setBounds(0, 0, 150, 30);
+        yearCombo.setBounds(0, 0, 100, 30);
         datePanel.add(yearCombo);
 
         String[] months = {"All","1","2","3","4","5","6","7","8","9","10","11","12"};
         monthCombo = new JComboBox<>(months);
-        monthCombo.setBounds(150, 0, 150, 30);
+        monthCombo.setBounds(120, 0, 100, 30);
         datePanel.add(monthCombo);
 
         viewReports = new JButton("View Reports");
-        viewReports.setBounds(300, 0, 150, 30);
+        viewReports.setBounds(250, 0, 150, 30);
         viewReports.addActionListener(this);
         datePanel.add(viewReports);
 
-        container.add(datePanel, BorderLayout.SOUTH);
-
+        container.add(datePanel);
 
 
 
@@ -90,11 +98,14 @@ public class ViewReportsPage extends JPanel implements ActionListener {
         scroll.setBounds(0, 0, 500, 450);
         rightPanel.add(scroll);
 
-
-
         main.setContentPane(container);
         main.revalidate();
         main.repaint();
+    }
+
+    private void loadTable(String[] columns) {
+        model.setColumnIdentifiers(columns);
+        model.setRowCount(0);
     }
 
     @Override
@@ -111,11 +122,18 @@ public class ViewReportsPage extends JPanel implements ActionListener {
             option = "Frequent station";
         }
 
+        if (e.getSource() == mostReportedEquipment) {
+            option = "mostReportedEquipment";
+        }
+
         if (e.getSource() == goBack) {
             main.showMainmenu();
         }
 
         if (e.getSource() == viewReports && option.equals("Average Preptime")) {
+
+            loadTable(new String[]{"Item Name", "Average Prep Time"});
+
             int selectedYear = Integer.parseInt((String) yearCombo.getSelectedItem());
             int selectedMonthIndex = monthCombo.getSelectedIndex(); // 0 = All, 1 = Jan
 
@@ -130,7 +148,6 @@ public class ViewReportsPage extends JPanel implements ActionListener {
 
             sql += " GROUP BY mi.ItemID, mi.ItemName ORDER BY AveragePrepTime IS NULL, AveragePrepTime DESC";
 
-            StringBuilder message = new StringBuilder("Average Preparation Time per Item:\n\n");
 
             try (Connection conn = DriverManager.getConnection(
                     "jdbc:mysql://127.0.0.1:3306/ccinfomdb",
@@ -144,24 +161,20 @@ public class ViewReportsPage extends JPanel implements ActionListener {
 
                 try (ResultSet rs = s.executeQuery()) {
                     while (rs.next()) {
-                        String name = rs.getString("ItemName");
-                        String avgTime = rs.getString("AveragePrepTime");
-                        if (avgTime == null) avgTime = "N/A";
-                        message.append(String.format("%-25s : %s%n", name, avgTime));
+                        model.addRow(new Object[]{rs.getString("ItemName"), rs.getString("AveragePrepTime")});
                     }
                 }
 
             } catch (SQLException ex) {
                 ex.printStackTrace();
-                message = new StringBuilder("Error retrieving data: " + ex.getMessage());
             }
-            text.setText(message.toString());
         }
 
         if (e.getSource() == viewReports && option.equals("Sales reveneue")) {
+            loadTable(new String[]{"Item Name", "Qty Sold", "Revenue"});
             int selectedYear = Integer.parseInt((String) yearCombo.getSelectedItem());
-            int selectedMonthIndex = monthCombo.getSelectedIndex(); // 0 = All
-            int selectedMonth = selectedMonthIndex; // if "All", keep 0
+            int selectedMonth = monthCombo.getSelectedIndex(); // 0 = All
+
 
             String sql = """
                 (
@@ -204,22 +217,13 @@ public class ViewReportsPage extends JPanel implements ActionListener {
 
                 ResultSet rs = s.executeQuery();
 
-                StringBuilder sb = new StringBuilder();
-                sb.append(String.format("%-25s %-10s %s%n", "Item Name", "Qty Sold", "Revenue"));
-                sb.append("--------------------------------------------------\n");
-
                 while (rs.next()) {
-                    String name = rs.getString("ItemName");
-                    String qty = rs.getString("TotalSold");
-                    String revenue = rs.getString("Revenue");
-
-                    if (qty == null) qty = "-";   // for TOTAL row
-                    if (revenue == null) revenue = "0";
-
-                    sb.append(String.format("%-25s %-10s ₱%s%n", name, qty, revenue));
+                model.addRow(new Object[]{
+                            rs.getString(1),
+                            rs.getString(2) == null ? "-" : rs.getString(2),
+                            "₱" + rs.getString(3)
+                    });
                 }
-
-                text.setText(sb.toString());
 
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -227,9 +231,9 @@ public class ViewReportsPage extends JPanel implements ActionListener {
         }
 
         if(e.getSource() == viewReports && option.equals("Frequent station")) {
+            loadTable(new String[]{"Station Name", "Usage Count"});
             int selectedYear = Integer.parseInt((String) yearCombo.getSelectedItem());
-            int selectedMonthIndex = monthCombo.getSelectedIndex();
-            int selectedMonth = selectedMonthIndex;
+            int selectedMonth = monthCombo.getSelectedIndex();
 
             String sql = """
                 SELECT
@@ -258,17 +262,49 @@ public class ViewReportsPage extends JPanel implements ActionListener {
 
                 ResultSet rs = s.executeQuery();
 
-                StringBuilder sb = new StringBuilder();
-                sb.append(String.format("%-25s %s%n", "Station Name", "Usage Count"));
-                sb.append("----------------------------------------\n");
-
                 while (rs.next()) {
-                    String station = rs.getString("StationName");
-                    int count = rs.getInt("UsageCount");
-                    sb.append(String.format("%-25s %d%n", station, count));
+                    model.addRow(new Object[]{
+                        rs.getString(1),
+                        rs.getInt(2)
+                    });
                 }
 
-                text.setText(sb.toString());
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+        if(e.getSource() == viewReports && option.equals("mostReportedEquipment")) {
+            loadTable(new String[]{"Equipment Name", "Report Count", "Maintenance Cost"});
+
+            int selectedYear = Integer.parseInt((String) yearCombo.getSelectedItem());
+            int selectedMonth = monthCombo.getSelectedIndex();
+
+            String sql =
+                    "SELECT e.EquipmentName, COUNT(m.EquipmentID) AS reportCounts,\n" +
+                    "SUM(m.MaintenanceCost) AS totalCost\n" +
+                    "FROM maintenancetracker m\n" +
+                    "JOIN equipments e ON m.EquipmentID = e.EquipmentID\n" +
+                    "WHERE (YEAR(m.reportDate) = ? OR ? = 0)\n" +
+                    "AND (MONTH(m.reportDate) = ? OR ? = 0)\n" +
+                    "GROUP BY e.EquipmentName";
+            try (Connection conn = DriverManager.getConnection(
+                    "jdbc:mysql://127.0.0.1:3306/ccinfomdb", "root", "12345678");
+                 PreparedStatement s = conn.prepareStatement(sql)) {
+
+                s.setInt(1, selectedYear);
+                s.setInt(2, selectedYear);
+                s.setInt(3, selectedMonth);
+                s.setInt(4, selectedMonth);
+
+                ResultSet rs = s.executeQuery();
+
+                while (rs.next()) {
+                    model.addRow(new Object[]{
+                            rs.getString(1),
+                            rs.getInt(2),
+                            rs.getFloat(3)
+                    });
+                }
 
             } catch (SQLException ex) {
                 ex.printStackTrace();

@@ -41,7 +41,7 @@ public class MaintenanceReport extends JFrame {
     private static final Font FONT_TOTAL_COST = new Font("Segoe UI", Font.BOLD, 18);
     private static final Color COLOR_PANEL_BG = new Color(245, 245, 245);
 
-    private MainMenu parentMenu;
+    private Main parentMenu;
 
     /**
      * Constructor 1: For Standalone Mode.
@@ -73,9 +73,9 @@ public class MaintenanceReport extends JFrame {
 
     /**
      * Constructor 2: For Module Mode.
-     * @param parentMenu The MainMenu object that is launching this window.
+     * @param parentMenu The Main object that is launching this window.
      */
-    public MaintenanceReport(MainMenu parentMenu) {
+    public MaintenanceReport(Main parentMenu) {
         super("Equipment Maintenance Report (Janret Galvez)");
         this.parentMenu = parentMenu;
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
