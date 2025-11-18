@@ -49,22 +49,16 @@ public class Main extends JFrame implements ActionListener {
         maintenance .addActionListener(this);
         mainmenu.add(maintenance);
 
-
         showMainmenu();
         setVisible(true);
-
-
     }
 
     public void showMainmenu(){
         setContentPane(mainmenu);
     }
 
-
     public static void main(String[] args) {
         new Main();
-
-
     }
 
     @Override
@@ -77,9 +71,11 @@ public class Main extends JFrame implements ActionListener {
             MaintenanceLog maintenanceWindow = new MaintenanceLog(this);
             maintenanceWindow.setVisible(true);
         }
-
         if(e.getSource() == reports){
             viewreports.showViewReportsButton();
+        }
+        if(e.getSource() == staffs){
+            new EditStaffRole().setVisible(true);
         }
     }
 }

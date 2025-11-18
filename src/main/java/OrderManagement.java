@@ -1,10 +1,11 @@
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class OrderManagement extends JPanel implements ActionListener {
     JPanel orderManagementPage;
-    JButton addOrderButton, viewPendingOrdersButton;
+    JButton addOrderButton, viewPendingOrdersButton, backButton;
     Main main;
     AddAnOrder addAnOrder;
     EditQueueStatus editQueueStatus;
@@ -21,17 +22,30 @@ public class OrderManagement extends JPanel implements ActionListener {
         orderManagementPage.setSize(800,600);
         orderManagementPage.setLayout(null);
 
-        addOrderButton = new JButton("Add Order");
-        addOrderButton.setBounds(0,0,300,600);
+        ImageIcon icon = new ImageIcon("src/main/resources/add.png");
+        addOrderButton = new JButton(icon);
+        addOrderButton.setContentAreaFilled(false);
+        addOrderButton.setBounds(0,0,270,569);
         addOrderButton.addActionListener(this);
         orderManagementPage.add(addOrderButton);
 
-        viewPendingOrdersButton = new JButton("View Pending Orders");
-        viewPendingOrdersButton.setBounds(300,0,300,600);
+        ImageIcon icon2 = new ImageIcon("src/main/resources/view.png");
+        viewPendingOrdersButton = new JButton(icon2);
+        viewPendingOrdersButton.setContentAreaFilled(false);
+        viewPendingOrdersButton.setBounds(270,0,265,569);
         viewPendingOrdersButton.addActionListener(this);
         orderManagementPage.add(viewPendingOrdersButton);
 
         main.setContentPane(orderManagementPage);
+
+        ImageIcon icon3 = new ImageIcon("src/main/resources/back.png");
+        backButton = new JButton(icon3);
+        backButton.setContentAreaFilled(false);
+        backButton.setBounds(535,0,266,569);
+        backButton.addActionListener(this);
+        orderManagementPage.add(backButton);
+
+
     }
 
     @Override
@@ -42,6 +56,10 @@ public class OrderManagement extends JPanel implements ActionListener {
 
         if  (e.getSource() == viewPendingOrdersButton){
             editQueueStatus.showEditQueueStatus();
+        }
+
+        if (e.getSource() == backButton){
+            main.showMainmenu();
         }
     }
 }
