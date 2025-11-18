@@ -14,175 +14,151 @@ import java.text.NumberFormat;
 
 public class MaintenanceLog extends JFrame {
 
-    // --- Database Connection ---
-    // User's provided connection string
+// Connection to Database
     private static final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
-    private static final String DB_URL = "jdbc:mysql://127.0.0.1:3306/ccinfomdb"; // Retaining user's DB_URL
-    private static final String DB_USER = "root"; // e.g., "root"
+    private static final String DB_URL = "jdbc:mysql://127.0.0.1:3306/ccinfomdb";
+    private static final String DB_USER = "root";
     private static final String DB_PASS = "12345678";
-
     private Connection conn;
 
-    // --- GUI Components ---
+// gui variables
     private JTable maintenanceTable;
     private DefaultTableModel tableModel;
 
-    // Components for the "Log New Issue" Panel
+// variables for the LogNewIssue to allow typing in information
     private JComboBox<EquipmentItem> equipmentCombo;
     private JComboBox<String> issueTypeCombo;
-    private JComboBox<String> priorityCombo; // NEW
-    private JComboBox<KitchenStaffItem> reportedByCombo; // NEW
-    private JTextArea descriptionArea; // NEW
+    private JComboBox<String> priorityCombo;
+    private JComboBox<KitchenStaffItem> reportedByCombo;
+    private JTextArea descriptionArea;
     private JButton submitButton;
 
-    // Components for the new "Actions" Panel
-    private JButton editButton; // NEW
-    private JButton deleteButton; // NEW
-    private JButton refreshButton; // NEW
-    private JButton backButton; // NEW: Go Back button
+// buttons to allow editing the information in a report, delete a report,
+// refreshing the list, and a back button to the menu.
+    private JButton editButton;
+    private JButton deleteButton;
+    private JButton refreshButton;
+    private JButton backButton;
 
-    // --- Fonts and Colors ---
+// designing the gui with good fonts and colors
     private static final Font FONT_LABEL = new Font("Segoe UI", Font.BOLD, 14);
     private static final Font FONT_COMPONENT = new Font("Segoe UI", Font.PLAIN, 14);
     private static final Color COLOR_PANEL_BG = new Color(245, 245, 245);
     private static final Border PADDING_BORDER = new EmptyBorder(15, 15, 15, 15);
 
+// parent class is the main menu, also used to unhide the main menu when this frame is closed
     private Main parentMenu;
 
-    /**
-     * Constructor 1: For Standalone Mode.
-     */
+    // used in case maintenance log is launched as standalone, like when ran on IntelliJ instead of main men
     public MaintenanceLog() {
-        super("Maintenance Logging (Standalone Mode)");
-        this.parentMenu = null;
+        super("Maintenance Log"); //
+        this.parentMenu = null; // running standalone
 
-        // --- EDITED: Changed to DISPOSE_ON_CLOSE to allow listener to handle DB connection ---
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-        // --- EDITED: Added listener to gracefully close DB connection on 'X' click ---
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent e) {
-                // This window is closing, and it's standalone,
-                // so we need to close the DB and exit.
-                try {
-                    if (conn != null && !conn.isClosed()) {
-                        conn.close();
-                        System.out.println("Standalone DB connection closed.");
-                    }
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-                System.exit(0); // Now exit.
-            }
-        });
-
-        initialize();
-        setLocationRelativeTo(null);
-    }
-
-    /**
-     * Constructor 2: For Module Mode.
-     * @param parentMenu The MainMenu object that is launching this window.
-     */
-    public MaintenanceLog(Main parentMenu) {
-        super("Maintenance Logging System (Janret Galvez)");
-        this.parentMenu = parentMenu;
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        // close the window when user clicks x,
+        // doesnt kill program yet
 
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
-                // We must also close our connection when this window is disposed
+                try { // check if database is connected
+                    if (conn != null && !conn.isClosed()) { // if yes, then close it to free resources
+                        conn.close();
+                    }
+                } catch (SQLException ex) { // if closing fails, print error in case for debugging
+                    ex.printStackTrace();
+                }
+                System.exit(0); // exits the application
+            }
+        });
+
+        initialize(); // starts/initializes the buttons, tables, etc
+        setLocationRelativeTo(null); // centers the window, just to make it look good lol
+    }
+
+    public MaintenanceLog(Main parentMenu) { // runs when launched from main menu
+        super("Maintenance Log"); // window title same as above
+        this.parentMenu = parentMenu; // saved to go back to menu if needed/pressed go back
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);  // same as above
+
+        addWindowListener(new WindowAdapter() { // runs when user closes window
+            @Override
+            public void windowClosed(WindowEvent e) {
+                // close DB connection when this window is closed
                 try {
                     if (conn != null && !conn.isClosed()) {
                         conn.close();
-                        System.out.println("MaintenanceLog DB connection closed.");
                     }
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
-                parentMenu.setVisible(true); // Go back to main menu
+                parentMenu.setVisible(true); // Go back to main menu/makes main menu visible again
             }
         });
 
-        initialize();
-        setLocationRelativeTo(parentMenu);
+        initialize(); // same as above
+        setLocationRelativeTo(parentMenu); // same as above
     }
 
-    /**
-     * Common initialization method.
-     */
     private void initialize() {
-        try {
+        try { // look like a windows app or mac app
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
+        } catch (Exception e) { // print error if fail but continue running
             e.printStackTrace();
         }
 
-        setSize(1200, 800); // Made window larger
-        setLayout(new BorderLayout(10, 10));
+        setSize(1200, 800); // set size
+        setLayout(new BorderLayout(10, 10)); // set border layout and pixel gaps between sections
 
         try {
-            // --- 1. Create OWN Database Connection ---
-            Class.forName(DB_DRIVER);
-            conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-            System.out.println("MaintenanceLog DB connection successful.");
+            Class.forName(DB_DRIVER); // load driver so java can "speak" to MySQL
+            conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS); // uses the set variables to connect to the DB
 
-            // --- 2. Build the GUI components ---
-            initComponents();
+            initComponents(); // creates buttons, text fields, tables, etc
 
-            // --- 3. Load initial data from SQL Database ---
-            loadMaintenanceLogs();
-            loadEquipmentDropdown();
-            loadStaffDropdown(); // NEW: Load the staff list
+            loadMaintenanceLogs(); // defined later
+            loadEquipmentDropdown(); // defined later
+            loadStaffDropdown(); // defined later
 
-        } catch (ClassNotFoundException e) {
-            showErrorDialog("Database Error", "MySQL JDBC Driver not found!");
-            if (parentMenu == null) System.exit(1); // Only exit if standalone
-        } catch (SQLException e) {
+        } catch (ClassNotFoundException e) { // error handling
+            showErrorDialog("Database Error", "MySQL JDBC Driver not found!"); // if driver file is missing
+            if (parentMenu == null) System.exit(1); // If running alone, quit. If part of MainMenu, stay open
+        } catch (SQLException e) { // if password is wrong or DB is not found or offline
             showErrorDialog("Connection Failed", "Could not connect to database:\n" + e.getMessage());
             if (parentMenu == null) System.exit(1);
-        } catch (Exception e) {
+        } catch (Exception e) { // any other errors
             showErrorDialog("Error", "An unexpected error occurred:\n" + e.getMessage());
         }
     }
 
-
-    /**
-     * Creates and lays out all the Swing GUI components.
-     */
     private void initComponents() {
 
-        // --- 1. The "View History" Table (CENTER) ---
-        // NEW: Added more columns
         String[] columnNames = {"Report ID", "Equipment", "Issue Type", "Status", "Priority", "Reported By", "Report Date", "Maint. Date", "Cost"};
+        // set column names for the table
 
-        tableModel = new DefaultTableModel(columnNames, 0) {
+        tableModel = new DefaultTableModel(columnNames, 0) { // holds the actual data
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return false; // cell is not directly editable, have to use the edit button.
             }
         };
-        maintenanceTable = new JTable(tableModel);
-        maintenanceTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        maintenanceTable.setFont(FONT_COMPONENT);
-        maintenanceTable.setRowHeight(25);
-        maintenanceTable.getTableHeader().setFont(FONT_LABEL);
+        maintenanceTable = new JTable(tableModel); // displays data as a table
+        maintenanceTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // one row at a time, no multi-select
+        maintenanceTable.setFont(FONT_COMPONENT); // set font for rows and headers
+        maintenanceTable.setRowHeight(25); // row taller for readability/no cut off
+        maintenanceTable.getTableHeader().setFont(FONT_LABEL); // set font for rows and headers
 
         // Make columns wider
-        maintenanceTable.getColumnModel().getColumn(1).setPreferredWidth(180); // Equipment
-        maintenanceTable.getColumnModel().getColumn(5).setPreferredWidth(120); // Reported By
+        maintenanceTable.getColumnModel().getColumn(1).setPreferredWidth(120); // Equipment column; set width
+        maintenanceTable.getColumnModel().getColumn(5).setPreferredWidth(120); // Reported By column; set width
 
-        JScrollPane tableScrollPane = new JScrollPane(maintenanceTable);
-        tableScrollPane.setBorder(new EmptyBorder(10, 10, 10, 10));
-        add(tableScrollPane, BorderLayout.CENTER);
+        JScrollPane tableScrollPane = new JScrollPane(maintenanceTable); // to allow scrolling for many logs
+        tableScrollPane.setBorder(new EmptyBorder(10, 10, 10, 10)); //padding, cleanliness
+        add(tableScrollPane, BorderLayout.CENTER); // table is centered on the main layout
 
-        // --- 2. The "Log New Issue" Form (SOUTH) ---
-        // NEW: This form is now much larger and more complete
-        JPanel inputPanel = new JPanel(new GridBagLayout());
-        inputPanel.setBackground(COLOR_PANEL_BG);
-        inputPanel.setBorder(BorderFactory.createTitledBorder(
+        JPanel inputPanel = new JPanel(new GridBagLayout()); // new panel and layout
+        inputPanel.setBackground(COLOR_PANEL_BG); // flexible grid (rows & columns) of inputs
+        inputPanel.setBorder(BorderFactory.createTitledBorder( // add border with "log new issue"
                 new EmptyBorder(10, 10, 10, 10), "Log New Issue",
                 javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
                 javax.swing.border.TitledBorder.DEFAULT_POSITION,
@@ -299,9 +275,7 @@ public class MaintenanceLog extends JFrame {
         backButton.addActionListener(e -> handleGoBack());
     }
 
-    /**
-     * NEW: Handles the logic for the "Go Back" button.
-     */
+
     private void handleGoBack() {
         // Just call dispose(). The WindowListeners we set up in the
         // constructors will handle the rest (either showing parent or exiting)
