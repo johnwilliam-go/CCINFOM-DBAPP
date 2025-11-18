@@ -1,4 +1,3 @@
-
 INSERT INTO Kitchenstations (stationID, stationName, stationDescription)
 VALUES
 ('1001', 'Grill Station', 'Used for grilling meats, burgers, and seafood'),
@@ -60,24 +59,24 @@ VALUES
 INSERT INTO KitchenStaff (StaffID, UserID, FirstName, LastName, Role, EmploymentStatus)
 VALUES
 ('3001', 'john.williams', 'John', 'Williams', 'Head Chef', 'Active'),
-('3002', 'maria.santos', 'Maria', 'Santos', 'Sous Chef', 'Active'),
-('3003', 'leo.reyes', 'Leo', 'Reyes', 'Cook', 'Active'),
-('3004', 'angel.diaz', 'Angel', 'Diaz', 'Cook', 'Active'),
-('3005', 'karen.lim', 'Karen', 'Lim', 'Pastry Chef', 'Active'),
-('3006', 'paul.garcia', 'Paul', 'Garcia', 'Grill Cook', 'Active'),
-('3007', 'ryan.tan', 'Ryan', 'Tan', 'Fryer Operator', 'Active'),
-('3008', 'ella.cruz', 'Ella', 'Cruz', 'Salad Prep', 'Active'),
-('3009', 'joshua.lee', 'Joshua', 'Lee', 'Soup Cook', 'Active'),
-('3010', 'sophia.ong', 'Sophia', 'Ong', 'Barista', 'Active'),
-('3011', 'andrew.delacruz', 'Andrew', 'Dela Cruz', 'Dishwasher', 'Active'),
-('3012', 'michelle.go', 'Michelle', 'Go', 'Cashier', 'Active'),
-('3013', 'daniel.chua', 'Daniel', 'Chua', 'Maintenance', 'Active'),
-('3014', 'nina.lopez', 'Nina', 'Lopez', 'Assistant Cook', 'Active'),
+('3002', 'maria.santos', 'Maria', 'Santos', 'Head Chef', 'Active'),
+('3003', 'leo.reyes', 'Leo', 'Reyes', 'Assistant Head Chef', 'Active'),
+('3004', 'angel.diaz', 'Angel', 'Diaz', 'Assistant Head Chef', 'Active'),
+('3005', 'karen.lim', 'Karen', 'Lim', 'Assistant Head Chef', 'Active'),
+('3006', 'paul.garcia', 'Paul', 'Garcia', 'Assistant Head Chef', 'Active'),
+('3007', 'ryan.tan', 'Ryan', 'Tan', 'Cook', 'Active'),
+('3008', 'ella.cruz', 'Ella', 'Cruz', 'Cook', 'Active'),
+('3009', 'joshua.lee', 'Joshua', 'Lee', 'Cook', 'Active'),
+('3010', 'sophia.ong', 'Sophia', 'Ong', 'Cook', 'Active'),
+('3011', 'andrew.delacruz', 'Andrew', 'Dela Cruz', 'Cook', 'Active'),
+('3012', 'michelle.go', 'Michelle', 'Go', 'Cook', 'Active'),
+('3013', 'daniel.chua', 'Daniel', 'Chua', 'Cook', 'Active'),
+('3014', 'nina.lopez', 'Nina', 'Lopez', 'Cook', 'Active'),
 ('3015', 'patrick.gomez', 'Patrick', 'Gomez', 'Server', 'Active'),
 ('3016', 'oliver.chan', 'Oliver', 'Chan', 'Server', 'Active'),
-('3017', 'emily.rodriguez', 'Emily', 'Rodriguez', 'Kitchen Helper', 'Active'),
-('3018', 'charles.yu', 'Charles', 'Yu', 'Stock Clerk', 'Active'),
-('3019', 'rachel.fernandez', 'Rachel', 'Fernandez', 'Inventory Manager', 'Active'),
+('3017', 'emily.rodriguez', 'Emily', 'Rodriguez', 'Server', 'Active'),
+('3018', 'charles.yu', 'Charles', 'Yu', 'Server', 'Active'),
+('3019', 'rachel.fernandez', 'Rachel', 'Fernandez', 'Server', 'Active'),
 ('3020', 'brian.mendoza', 'Brian', 'Mendoza', 'Cleaner', 'Active');
 
 INSERT INTO Equipments (EquipmentID, EquipmentName, Category, Brand, Description, SupplierName, ContactNumber, EmailAddress)

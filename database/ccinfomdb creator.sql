@@ -1,4 +1,4 @@
--- Drop tables in correct dependency order
+-- db name must be "ccinfomdb" while user is "root" and password is "12345678"
 DROP TABLE IF EXISTS MaintenanceTracker;
 DROP TABLE IF EXISTS ActivityLog;
 DROP TABLE IF EXISTS OrderEntries;
@@ -27,7 +27,7 @@ CREATE TABLE MenuItems (
 
 -- 3. Kitchen Staff
 CREATE TABLE KitchenStaff (
-    StaffID INT PRIMARY KEY,
+    StaffID INT PRIMARY KEY AUTO_INCREMENT,
     UserID VARCHAR(50),
     FirstName VARCHAR(50) NOT NULL,
     LastName VARCHAR(50) NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE KitchenStaff (
     EmploymentStatus ENUM('Active', 'On Leave', 'Resigned') DEFAULT 'Active'
 );
 
--- 4. Kitchen Order Ticket (simplified)
+-- 4. Kitchen Order Ticket
 CREATE TABLE KitchenOrderTicket (
     KotID INT PRIMARY KEY AUTO_INCREMENT,
     CustomerName VARCHAR(100) NOT NULL,
@@ -48,7 +48,7 @@ CREATE TABLE KitchenOrderTicket (
     OrderDetails TEXT
 );
 
--- 5. Order Entries (with OrderTime + PreparationTime)
+-- 5. Order Entries
 CREATE TABLE OrderEntries (
     KOTItemID INT PRIMARY KEY AUTO_INCREMENT,
     KotID INT NOT NULL,
@@ -57,13 +57,26 @@ CREATE TABLE OrderEntries (
     Quantity INT,
     CookingNotes VARCHAR(100),
     OrderStatus ENUM('In The Kitchen', 'Completed') DEFAULT 'In The Kitchen',
-    OrderTime TIME,  -- Added from KitchenOrderTicket
-    PreparationTime INT,  -- Moved here
-    TimeCompleted TIME,
+    PreparationTime TIME,
+    TimeCompleted DATETIME,
+    OrderDate DATE, -- added column
     FOREIGN KEY (KotID) REFERENCES KitchenOrderTicket(KotID),
     FOREIGN KEY (ItemID) REFERENCES MenuItems(ItemID),
     FOREIGN KEY (PreparedBy) REFERENCES KitchenStaff(StaffID)
 );
+
+-- Trigger to copy OrderDate from KitchenOrderTicket when inserting
+DELIMITER //
+CREATE TRIGGER copy_orderdate_to_orderentries
+BEFORE INSERT ON OrderEntries
+FOR EACH ROW
+BEGIN
+    DECLARE od DATE;
+    SELECT OrderDate INTO od FROM KitchenOrderTicket WHERE KotID = NEW.KotID;
+    SET NEW.OrderDate = od;
+END;
+//
+DELIMITER ;
 
 -- 6. Activity Log
 CREATE TABLE ActivityLog (
@@ -108,29 +121,19 @@ CREATE TABLE MaintenanceTracker (
     FOREIGN KEY (ReportedBy) REFERENCES KitchenStaff(StaffID)
 );
 
--- Trigger to randomize PreparedBy and copy OrderTime
+-- randomize staff 
 DELIMITER //
 CREATE TRIGGER random_preparedby
 BEFORE INSERT ON OrderEntries
 FOR EACH ROW
 BEGIN
     DECLARE randomStaff INT;
-    DECLARE kotTime TIME;
-
-    -- Pick a random staff
     SELECT StaffID INTO randomStaff
     FROM KitchenStaff
+    WHERE Role IN ("Head Chef", "Assistant Chef", "Cook")
     ORDER BY RAND()
     LIMIT 1;
-
-    -- Get the OrderTime from the related KitchenOrderTicket
-    SELECT OrderTime INTO kotTime
-    FROM KitchenOrderTicket
-    WHERE KotID = NEW.KotID;
-
-    -- Set both random PreparedBy and the OrderTime
     SET NEW.PreparedBy = randomStaff;
-    SET NEW.OrderTime = kotTime;
 END;
 //
 DELIMITER ;
