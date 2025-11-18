@@ -243,8 +243,6 @@ public class EditStaffRole extends javax.swing.JFrame {
         panel1.setLayout(null);
         panel1.setBounds(0,0,800,600);
 
-
-
         viewStaff.setBounds(0, 0, 266, 285);
         viewStaff.setContentAreaFilled(false);
 
