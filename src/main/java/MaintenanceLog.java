@@ -1,20 +1,20 @@
-import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.sql.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.text.NumberFormat;
+import javax.swing.*; // GUI
+import javax.swing.border.Border; // Style
+import javax.swing.border.EmptyBorder; // Style
+import javax.swing.table.DefaultTableModel; // Table Management
+import java.awt.*; // Style/Graphics
+import java.awt.event.WindowAdapter; // event handling
+import java.awt.event.WindowEvent; // event handling
+import java.sql.*; // database itself
+import java.text.ParseException; // error handling
+import java.text.SimpleDateFormat; // date/time format
+import java.util.Date; // general date before converted to SQL
+import java.util.Locale; // localization to PH
+import java.text.NumberFormat; // number formatting to currency
 
 public class MaintenanceLog extends JFrame {
 
-// Connection to Database
+// connection to db
     private static final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String DB_URL = "jdbc:mysql://127.0.0.1:3306/ccinfomdb";
     private static final String DB_USER = "root";
