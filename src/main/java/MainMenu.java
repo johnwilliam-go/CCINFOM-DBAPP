@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.*;
 
 public class MainMenu extends JFrame implements ActionListener {
 
@@ -26,10 +27,6 @@ public class MainMenu extends JFrame implements ActionListener {
         OrdersAndSales = new JButton("Orders and Sales");
         FrequentStation = new JButton("Frequent Station");
         MaintenanceReport = new JButton("Maintenance Report");
-
-
-
-
 
         button1.addActionListener(this);
         button2.addActionListener(this);
@@ -80,30 +77,33 @@ public class MainMenu extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == button1) {
             this.setVisible(false);
-            new AddAnOrder(this);
-        }
-        else if (e.getSource() == button2) {
-            JOptionPane.showMessageDialog(null,
-                    "Set the order status to ready for each order line." +
-                            "\ntables affected: orderentries");
         }
         else if (e.getSource() == button3) {
             JOptionPane.showMessageDialog(null,
                     "Insert equipmentid, issuetype, priority, description, and reported by" +
                     "\nTable affected: maintenancetracker");
         }
-        else if (e.getSource() == button4) {
-            this.setVisible(false);
-            MaintenanceLog maintenanceWindow = new MaintenanceLog(this);
-            maintenanceWindow.setVisible(true);
-        }
+//        else if (e.getSource() == button4) {
+//            this.setVisible(false);
+//            MaintenanceLog maintenanceWindow = new MaintenanceLog(this);
+//            maintenanceWindow.setVisible(true);
+//        }
         else if (e.getSource() == MaintenanceReport) { // Or whatever your button is named
             this.setVisible(false);
 
             // This calls the "module" constructor for your new report
-            MaintenanceReport reportWindow = new MaintenanceReport(this);
+            MaintenanceReport reportWindow = new MaintenanceReport(null);
             reportWindow.setVisible(true);
         }
+
+        // Report #1
+        else if (e.getSource() == AvgOrderPrep) {
+
+        }
+
     }
 }
+
+// 5/8 functions done (2 faulty)
+
 

@@ -1,25 +1,85 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.*;
 
-public class Main {
-    public static void main(String[] args) throws Exception {
-        Connection connection = DriverManager.getConnection(
-                "jdbc:mysql://127.0.0.1:3306/ccinfomdb",
-                "root",
-                "12345678"
-        );
+public class Main extends JFrame implements ActionListener {
+    JButton orders, reports, staffs, maintenance;
+    JPanel mainmenu;
+    AddAnOrder addAnOrder;
+    OrderManagement orderManagement;
+    ViewReportsPage viewreports;
+    Main(){
+        setTitle("Cloud Kitchen Database");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setResizable(false);
+        setSize(800,600);
+        setLayout(null);
+        mainmenu = new JPanel(null);
+        mainmenu.setSize(800,600);
+
+        addAnOrder = new AddAnOrder(this);
+        orderManagement = new OrderManagement(this);
+        viewreports = new ViewReportsPage(this);
+
+        ImageIcon icon = new ImageIcon("src/main/resources/order.png");
+        orders =  new JButton(icon);
+        orders.setContentAreaFilled(false);
+        orders.setBounds(0,0,800,140);
+        orders.addActionListener(this);
+        mainmenu.add(orders);
+
+        ImageIcon iconReports = new ImageIcon("src/main/resources/reports.png");
+        reports = new JButton(iconReports);
+        reports.setContentAreaFilled(false);
+        reports.setBounds(0,140,800,140);
+        reports.addActionListener(this);
+        mainmenu.add(reports);
+
+        ImageIcon iconStaffs = new ImageIcon("src/main/resources/staff.png");
+        staffs = new JButton(iconStaffs);
+        staffs.setContentAreaFilled(false);
+        staffs.setBounds(0,280,800,140);
+        staffs.addActionListener(this);
+        mainmenu.add(staffs);
+
+        ImageIcon iconMaintenance = new ImageIcon("src/main/resources/maintenance.png");
+        maintenance = new JButton(iconMaintenance);
+        maintenance.setContentAreaFilled(false);
+        maintenance.setBounds(0,420,800,140);
+        maintenance .addActionListener(this);
+        mainmenu.add(maintenance);
 
 
-        //hard coded so everytime a user inputs a record, these data will be generated (just an example)
-        Statement statement = connection.createStatement();
-        String sql = "INSERT INTO equipments (EquipmentName, Category, Brand, Description, SupplierName, ContactNumber, EmailAddress) " +
-                "VALUES ('Grill #1', 'Grill', 'ShineLong', '', '', '09372738203', 'shinelongph@gmail.com')";
-        statement.executeUpdate(sql);
-        statement.close();
-        connection.close();
+        showMainmenu();
+        setVisible(true);
 
-        System.out.println("Data inserted successfully!");
+
+    }
+
+    public void showMainmenu(){
+        setContentPane(mainmenu);
+    }
+
+
+    public static void main(String[] args) {
+        new Main();
+
+
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if(e.getSource() == orders){
+            orderManagement.showOrderManagementPage();
+        }
+        if(e.getSource() == maintenance){
+            this.setVisible(false);
+            MaintenanceLog maintenanceWindow = new MaintenanceLog(this);
+            maintenanceWindow.setVisible(true);
+        }
+
+        if(e.getSource() == reports){
+            viewreports.showViewReportsButton();
+        }
     }
 }
