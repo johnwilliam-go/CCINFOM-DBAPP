@@ -30,27 +30,27 @@ public class ViewReportsPage extends JPanel implements ActionListener {
         buttonsPanel.setBounds(0,0,250,600);
 
         avgOrderPrepTime = new JButton("Average preptime");
-        avgOrderPrepTime.setBounds(20, 50, 150, 50);
+        avgOrderPrepTime.setBounds(20, 50, 175, 50);
         avgOrderPrepTime.addActionListener(this);
         buttonsPanel.add(avgOrderPrepTime);
 
         salesReveneue = new JButton("Sales reveneue");
-        salesReveneue.setBounds(20, 125, 150, 50);
+        salesReveneue.setBounds(20, 150, 175, 50);
         salesReveneue.addActionListener(this);
         buttonsPanel.add(salesReveneue);
 
         frequentStation = new JButton("Frequent station");
-        frequentStation.setBounds(20, 200, 150, 50);
+        frequentStation.setBounds(20, 250, 175, 50);
         frequentStation.addActionListener(this);
         buttonsPanel.add(frequentStation);
 
         mostReportedEquipment = new JButton("Maintenance Reports");
-        mostReportedEquipment.setBounds(20, 275, 150, 50);
+        mostReportedEquipment.setBounds(20, 350, 175, 50);
         mostReportedEquipment.addActionListener(this);
         buttonsPanel.add(mostReportedEquipment);
 
         goBack = new JButton("Go Back");
-        goBack.setBounds(20, 350, 150, 50);
+        goBack.setBounds(20, 450, 175, 50);
         goBack.addActionListener(this);
         buttonsPanel.add(goBack);
 

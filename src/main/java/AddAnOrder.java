@@ -277,7 +277,8 @@ public class AddAnOrder extends JPanel implements ActionListener {
 
                 kotidOfCustomer.close();
 
-                String selectedItem = (String) itemList.getSelectedItem(); // get the item from combo box
+
+                String selectedItem = (String) itemList.getSelectedItem();// get the item from combo box
                 s2.setString(1, selectedItem);
 
                 ResultSet itemIDofMenuItem = s2.executeQuery();

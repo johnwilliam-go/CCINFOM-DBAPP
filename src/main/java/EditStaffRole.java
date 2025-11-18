@@ -1,9 +1,10 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
@@ -11,7 +12,7 @@ import java.sql.PreparedStatement;
 public class EditStaffRole extends javax.swing.JFrame {
 
     //Fields
-    private javax.swing.JPanel panel1;
+    private javax.swing.JPanel panel1, staffViewPanel;
     private javax.swing.JPanel flowLayoutPanel1;
     private javax.swing.JButton addRole;
     private javax.swing.JButton editRole;
@@ -19,12 +20,14 @@ public class EditStaffRole extends javax.swing.JFrame {
     private javax.swing.JButton updateEmployment;
     private javax.swing.JLabel editStaffRoles;
     private javax.swing.JPanel flowLayoutPanel2;
-    private javax.swing.JButton goBack;
+    private javax.swing.JButton goBack, goBack2;
+    private javax.swing.JButton viewStaff;
+    private Main main;
 
     //Database Connection
-    private static final String DB_uRL = "jdbc:mysql://127.0.0.1:3306/ccinfom_db";
+    private static final String DB_uRL = "jdbc:mysql://127.0.0.1:3306/ccinfomdb";
     private static final String user = "root";
-    private static final String PASS = "Siopao_Haichi_23";
+    private static final String PASS = "12345678";
 
     //Methods for Database Connection
     public static Connection getConnection() throws SQLException{
@@ -43,11 +46,6 @@ public class EditStaffRole extends javax.swing.JFrame {
 
     //Event handlers
     private void addRole_Click(ActionEvent evt) {
-        String staffIdString = JOptionPane.showInputDialog(this, "Enter New Staff ID:");
-        if (staffIdString == null || staffIdString.trim().isEmpty()){
-            return;
-        }
-
         String firstName = JOptionPane.showInputDialog(this, "Enter First Name:");
         if (firstName == null || firstName.trim().isEmpty()){
             return;
@@ -75,15 +73,14 @@ public class EditStaffRole extends javax.swing.JFrame {
         }
 
         //Overwriting SQL Query
-        String sql = "INSERT INTO KitchenStaff (StaffID, FirstName, LastName, Role, EmploymentStatus) VALUES (?,?,?,?)";
+        String sql = "INSERT INTO KitchenStaff (FirstName, LastName, Role, EmploymentStatus) VALUES (?,?,?,?)";
         try (Connection conn = getConnection(); PreparedStatement ppstmt = conn.prepareStatement(sql);){
 
             //Setting values for ?
-            ppstmt.setString(1, staffIdString);
-            ppstmt.setString(2, firstName);
-            ppstmt.setString(3, lastName);
-            ppstmt.setString(4, role);
-            ppstmt.setString(5, status);
+            ppstmt.setString(1, firstName);
+            ppstmt.setString(2, lastName);
+            ppstmt.setString(3, role);
+            ppstmt.setString(4, status);
 
             //Execute query
             int rowsAffected = ppstmt.executeUpdate();
@@ -98,7 +95,7 @@ public class EditStaffRole extends javax.swing.JFrame {
         }
         catch (SQLException e){
             if(e.getErrorCode() == 1062) {//1062 is the error code for duplicate keys
-                JOptionPane.showMessageDialog(this,"A staff member with Staff ID '" + staffIdString + "' already exists.", "Error",JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,"A staff member with Staff ID already exists.", "Error",JOptionPane.ERROR_MESSAGE);
             }
             else {
                 JOptionPane.showMessageDialog(this, "Database Error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -150,11 +147,10 @@ public class EditStaffRole extends javax.swing.JFrame {
         if (staffIdString == null || staffIdString.trim().isEmpty()){
             return;
         }
-
         //Confirmation to avoid accidental deletion
         int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to remove Staff ID: " + staffIdString + "\nThis action cannot be undone.", "Confirm Removal", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
-        if (confirm != JOptionPane.YES_NO_CANCEL_OPTION){
+        if (confirm != JOptionPane.YES_OPTION){
             return; //User cancellation
         }
 
@@ -162,6 +158,7 @@ public class EditStaffRole extends javax.swing.JFrame {
         String sql = "DELETE FROM KitchenStaff WHERE StaffID = ?";
 
         //Connecting to the database
+
         try (Connection conn = getConnection(); PreparedStatement ppstmt = conn.prepareStatement(sql);){
             //Set values for ?
             ppstmt.setString(1, staffIdString);
@@ -226,109 +223,56 @@ public class EditStaffRole extends javax.swing.JFrame {
         }
     }
 
-
-
     //Initialize the Components
-    private void initializeComponents(){
+    public void initializeComponents(){
         panel1 = new javax.swing.JPanel();
         flowLayoutPanel1 = new javax.swing.JPanel();
-        addRole = new javax.swing.JButton();
-        editRole = new javax.swing.JButton();
-        removeRole = new javax.swing.JButton();
-        updateEmployment = new javax.swing.JButton();
+        addRole = new javax.swing.JButton(new ImageIcon("src/main/resources/addstaff.png"));
+        editRole = new javax.swing.JButton(new ImageIcon("src/main/resources/updateroles.png"));
+        removeRole = new javax.swing.JButton(new ImageIcon("src/main/resources/removestaff.png"));
+        updateEmployment = new javax.swing.JButton(new ImageIcon("src/main/resources/updateemployment.png"));
         editStaffRoles = new javax.swing.JLabel();
         flowLayoutPanel2 = new javax.swing.JPanel();
-        goBack = new javax.swing.JButton();
+        goBack = new javax.swing.JButton(new ImageIcon("src/main/resources/backstaff.png"));
+        goBack2 = new javax.swing.JButton();
+        viewStaff = new javax.swing.JButton(new ImageIcon("src/main/resources/viewstaffroles.png"));
 
-        //For JFrame
-        setTitle("Edit Staff Roles");
-        setSize(711,466);
-        setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
-
-        getContentPane().setLayout(null);
-        setLocationRelativeTo(null);
 
         //For JPanel
-        panel1.setOpaque(false);
-        panel1.setLayout(new java.awt.BorderLayout());
-        panel1.setBounds(212,147,245,249);
 
-        //Constructing another JPanel within panel1 but the controls within are fixed within panel1
-        flowLayoutPanel1.setLayout(new javax.swing.BoxLayout(flowLayoutPanel1, javax.swing.BoxLayout.Y_AXIS));
-        flowLayoutPanel1.setOpaque(false);
+        panel1.setLayout(null);
+        panel1.setBounds(0,0,800,600);
 
-        //For button "Add New Kitchen Staff"
-        addRole.setText("Add New Kitchen Staff");
-        addRole.setBackground(SystemColor.activeCaption);
-        addRole.setFont(new java.awt.Font("Modern No. 20",1,10));
 
-        //For formatting inside the BoxLayout which is flowLayoutPanel1
-        addRole.setPreferredSize(new java.awt.Dimension(240,56));
-        addRole.setMaximumSize(new java.awt.Dimension(240,56));
-        addRole.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
 
-        //For button "Update Roles"
-        editRole.setText("Update Roles");
-        editRole.setBackground(SystemColor.activeCaption);
-        editRole.setFont(new java.awt.Font("Modern No. 20",1,12));
-        editRole.setPreferredSize(new java.awt.Dimension(240,56));
-        editRole.setMaximumSize(new java.awt.Dimension(240,56));
-        editRole.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
+        viewStaff.setBounds(0, 0, 266, 285);
+        viewStaff.setContentAreaFilled(false);
 
-        //For button "Remove Staff Member"
-        removeRole.setText("Remove Staff Member");
-        removeRole.setBackground(SystemColor.activeCaption);
-        removeRole.setFont(new java.awt.Font("Modern No. 20",1,12));
-        removeRole.setPreferredSize(new java.awt.Dimension(240,56));
-        removeRole.setMaximumSize(new java.awt.Dimension(240,56));
-        removeRole.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
+        addRole.setBounds(266, 0, 266, 285);
+        addRole.setContentAreaFilled(false);
+
+
+        editRole.setBounds(532, 0, 266, 285);
+        editRole.setContentAreaFilled(false);
+
+        removeRole.setBounds(0, 285, 266, 285);
+        removeRole.setContentAreaFilled(false);
 
         //For button "Update Employment Status"
-        updateEmployment.setText("Update Employment Status");
-        updateEmployment.setBackground(SystemColor.activeCaption);
-        updateEmployment.setFont(new java.awt.Font("Modern No. 20",1,11));
-        updateEmployment.setPreferredSize(new java.awt.Dimension(240,56));
-        updateEmployment.setMaximumSize(new java.awt.Dimension(240,56));
-        updateEmployment.setAlignmentX(java.awt.Component.CENTER_ALIGNMENT);
+        updateEmployment.setBounds(266, 285, 266, 285);
+        updateEmployment.setContentAreaFilled(false);
 
-        //For "Back" button to be contained by flowLayoutPanel2
-        goBack.setText("Back");
-        goBack.setBackground(SystemColor.activeCaption);
-        goBack.setFont(new java.awt.Font("Mongolian Baiti",1,8));
-        goBack.setPreferredSize(new java.awt.Dimension(67,25));
-
-        //For JLabel
-        editStaffRoles.setText("Edit Staff Roles");
-        editStaffRoles.setFont(new java.awt.Font("Mongolian Baiti",1,36));
-
-        //Location
-        editStaffRoles.setBounds(136,38,420,64);
-        editStaffRoles.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-
-        //For flowLayoutPanel2 which has the control/component Back button
-        flowLayoutPanel2.setBounds(12,12,83,63);
-        flowLayoutPanel2.setOpaque(false);
-
-        //Adding controls/components to flowLayoutPanel1
-        flowLayoutPanel1.add(Box.createRigidArea(new Dimension(0,3))); //For Top Margin
-        flowLayoutPanel1.add(addRole);
-        flowLayoutPanel1.add(Box.createRigidArea(new Dimension(0,3))); //Gap
-        flowLayoutPanel1.add(editRole);
-        flowLayoutPanel1.add(Box.createRigidArea(new Dimension(0,6))); //Gap
-        flowLayoutPanel1.add(removeRole);
-        flowLayoutPanel1.add(Box.createRigidArea(new Dimension(0,6))); //Gap
-        flowLayoutPanel1.add(updateEmployment);
+        goBack.setBounds(532, 285, 266, 285);
+        goBack.setContentAreaFilled(false);
 
         //Adding flowLayoutPanel1 to panel1 and filling the whole panel1
-        panel1.add(flowLayoutPanel1,java.awt.BorderLayout.CENTER);
+        panel1.add(viewStaff);
+        panel1.add(addRole);
+        panel1.add(editRole);
+        panel1.add(removeRole);
+        panel1.add(updateEmployment);
+        panel1.add(goBack);
 
-        //Adding the "Back" button to flowLayoutPanel2
-        flowLayoutPanel2.add(goBack);
-
-        //Add the main container to JFrame
-        getContentPane().add(flowLayoutPanel2);
-        getContentPane().add(editStaffRoles);
-        getContentPane().add(panel1);
 
         //For Event Listeners
         addRole.addActionListener(new ActionListener() {
@@ -357,20 +301,82 @@ public class EditStaffRole extends javax.swing.JFrame {
 
         goBack.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                //goBack_Click(evt);
+                main.showMainmenu();
+            }
+        });
+
+        viewStaff.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                viewStaff(evt);
+                revalidate();
+                repaint();
+            }
+        });
+
+        main.setContentPane(panel1);
+
+    }
+
+    private void viewStaff(ActionEvent evt) {
+        goBack2 = new JButton("exit");
+        goBack2.setBounds(300, 500, 200, 50);
+
+        staffViewPanel = new JPanel(null);
+        staffViewPanel.setSize(800,600);
+
+        String[] columnNames = {"Staff ID", "User ID", "First Name", "Last Name", "Role", "Employment Status"};
+        DefaultTableModel staffTableModel = new DefaultTableModel(columnNames, 0);
+
+        JTable staffJTable = new JTable(staffTableModel);
+        staffJTable.setFillsViewportHeight(true);
+
+        JScrollPane scrollPane = new JScrollPane(staffJTable);
+        scrollPane.setBounds(0, 0, 800, 500);
+
+        staffViewPanel.add(scrollPane);
+        staffViewPanel.add(goBack2);
+
+        String sql = "SELECT * FROM KitchenStaff";
+
+
+        try (Connection conn = getConnection();
+             PreparedStatement s = conn.prepareStatement(sql);
+             java.sql.ResultSet rs = s.executeQuery()) {
+            while (rs.next()) {
+                Object[] row = {
+                        rs.getInt("StaffID"),
+                        rs.getString("UserID"),
+                        rs.getString("FirstName"),
+                        rs.getString("LastName"),
+                        rs.getString("Role"),
+                        rs.getString("EmploymentStatus")
+                };
+                staffTableModel.addRow(row);
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        main.setContentPane(staffViewPanel);
+
+
+        goBack2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                main.showMainmenu();
             }
         });
 
     }
 
-    public EditStaffRole(){
-        //A function that will initialize the frame
-        initializeComponents();
+    EditStaffRole(Main main){
+        this.main = main;
     }
 
 
 
-    public static void main(String[] args){
-        new EditStaffRole().setVisible(true);
-    }
+//    public static void main(String[] args){
+//        new EditStaffRole().setVisible(true);
+//    }
 }

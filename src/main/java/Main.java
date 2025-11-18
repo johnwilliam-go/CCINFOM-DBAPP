@@ -8,6 +8,7 @@ public class Main extends JFrame implements ActionListener {
     AddAnOrder addAnOrder;
     OrderManagement orderManagement;
     ViewReportsPage viewreports;
+    EditStaffRole editStaffRole;
     Main(){
         setTitle("Cloud Kitchen Database");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -20,6 +21,7 @@ public class Main extends JFrame implements ActionListener {
         addAnOrder = new AddAnOrder(this);
         orderManagement = new OrderManagement(this);
         viewreports = new ViewReportsPage(this);
+        editStaffRole = new EditStaffRole(this);
 
         ImageIcon icon = new ImageIcon("src/main/resources/order.png");
         orders =  new JButton(icon);
@@ -75,7 +77,7 @@ public class Main extends JFrame implements ActionListener {
             viewreports.showViewReportsButton();
         }
         if(e.getSource() == staffs){
-            new EditStaffRole().setVisible(true);
+            editStaffRole.initializeComponents();
         }
     }
 }

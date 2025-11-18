@@ -156,6 +156,14 @@ public class EditQueueStatus implements ActionListener {
                             "WHERE e.KOTItemID = " + orderEntryID;
             stmt.executeUpdate(insertLog);
 
+            String sql2 =
+                    "UPDATE OrderEntries oe\n" +
+                    "JOIN KitchenOrderTicket kot ON oe.KotID = kot.KotID\n" +
+                    "SET oe.PreparationTime = \n" +
+                    "    SEC_TO_TIME(TIMESTAMPDIFF(SECOND, kot.OrderTime, oe.TimeCompleted))\n" +
+                    "WHERE oe.TimeCompleted IS NOT NULL";
+            stmt.executeUpdate(sql2);
+
             JOptionPane.showMessageDialog(editQueueStatusPanel,
                     "Order #" + orderEntryID + " has been marked as " + nextStatus + ".");
             loadActiveOrders();
@@ -196,6 +204,7 @@ public class EditQueueStatus implements ActionListener {
 
                 model.addRow(new Object[]{orderEntryID, customer, itemName,quantity, assignedStaff, orderType, status});
             }
+
 
             rs.close();
             if (model.getRowCount() == 0) {
