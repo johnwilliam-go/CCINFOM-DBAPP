@@ -448,48 +448,40 @@ public class MaintenanceLog extends JFrame {
         private String name;
         private String category;
 
-        public EquipmentItem(int id, String name, String category) {
+        public EquipmentItem(int id, String name, String category) { // new equipment item object
             this.id = id; this.name = name; this.category = category;
         }
 
-        public int getId() { return id; }
-        public String getName() { return name; }
-        public String getCategory() { return category; }
+        public int getId() { return id; } // getter
+        public String getName() { return name; } // getter
+        public String getCategory() { return category; } // getter
 
         @Override
-        public String toString() { return name; }
+        public String toString() { return name; } // displays the name
     }
 
     private class KitchenStaffItem {
         private int id;
         private String name;
 
-        public KitchenStaffItem(int id, String name) {
+        public KitchenStaffItem(int id, String name) { // create new staff item
             this.id = id; this.name = name;
         }
 
-        public int getId() { return id; }
+        public int getId() { return id; } // gets staffid
 
         @Override
-        public String toString() { return name; }
+        public String toString() { return name; } // display the name
     }
 
-    /**
-     * Main method for standalone testing.
-     */
-    public static void main(String[] args) {
+    public static void main(String[] args) { // the main code woahhh
         SwingUtilities.invokeLater(() -> {
-            MaintenanceLog standaloneWindow = new MaintenanceLog();
-            standaloneWindow.setVisible(true);
+            MaintenanceLog standaloneWindow = new MaintenanceLog(); // create instance of maintenancelog window
+            standaloneWindow.setVisible(true); // make it visible
         });
     }
 }
 
-/**
- * Separate class for the Edit Dialog.
- * This makes the code much cleaner.
- * It's a JDialog that "pops up" over the main window.
- */
 class EditLogDialog extends JDialog {
 
     private Connection conn;
@@ -499,7 +491,7 @@ class EditLogDialog extends JDialog {
     private static final Font FONT_LABEL = new Font("Segoe UI", Font.BOLD, 14);
     private static final Font FONT_COMPONENT = new Font("Segoe UI", Font.PLAIN, 14);
 
-    // Fields
+    // hold data for user modification
     private JComboBox<String> statusCombo;
     private JComboBox<String> priorityCombo;
     private JComboBox<KitchenStaffItem> reportedByCombo;
@@ -509,23 +501,17 @@ class EditLogDialog extends JDialog {
     private JButton updateButton;
     private JButton cancelButton;
 
-    /**
-     * Constructor for the Edit Dialog.
-     * @param parent The JFrame (MaintenanceLog) that is opening this dialog.
-     * @param conn The database connection.
-     * @param reportId The ID of the log to edit.
-     */
-    public EditLogDialog(JFrame parent, Connection conn, int reportId) {
-        super(parent, "Edit Maintenance Log (ID: " + reportId + ")", true); // 'true' makes it modal
+    public EditLogDialog(JFrame parent, Connection conn, int reportId) { // the dialog box that allows the user to edit a row's data
+        super(parent, "Edit Maintenance Log (ID: " + reportId + ")", true); // 'true' makes it modal;
+        // meaning the user MUST CLOSE THIS DIALOG BOX before interacting with the main window again
         this.conn = conn;
         this.reportId = reportId;
 
         setSize(600, 500);
-        setLayout(new BorderLayout());
-        setLocationRelativeTo(parent);
+        setLayout(new BorderLayout()); // layout management
+        setLocationRelativeTo(parent); // center dialog box over main window
 
-        // --- 1. Build the Form Panel ---
-        JPanel formPanel = new JPanel(new GridBagLayout());
+        JPanel formPanel = new JPanel(new GridBagLayout()); // the dialog box
         formPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 10, 5, 10);
@@ -551,7 +537,7 @@ class EditLogDialog extends JDialog {
         gbc.gridx = 0; gbc.gridy = 2;
         formPanel.add(new JLabel("Reported By:") {{ setFont(FONT_LABEL); }}, gbc);
         gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
-        reportedByCombo = new JComboBox<>();
+        reportedByCombo = new JComboBox<>(); // filled with loadstaffdropdown() peopple
         reportedByCombo.setFont(FONT_COMPONENT);
         formPanel.add(reportedByCombo, gbc);
 
@@ -579,12 +565,12 @@ class EditLogDialog extends JDialog {
         descriptionArea.setFont(FONT_COMPONENT);
         descriptionArea.setLineWrap(true);
         descriptionArea.setWrapStyleWord(true);
-        JScrollPane descScrollPane = new JScrollPane(descriptionArea);
+        JScrollPane descScrollPane = new JScrollPane(descriptionArea); // scroll bar for lengthy descriptions
         formPanel.add(descScrollPane, gbc);
 
         add(formPanel, BorderLayout.CENTER);
 
-        // --- 2. Build the Button Panel ---
+        // buttons on the BOTTOM RIGHT of the panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(new Color(230, 230, 230));
         updateButton = new JButton("Update");
@@ -595,144 +581,130 @@ class EditLogDialog extends JDialog {
         buttonPanel.add(cancelButton);
         add(buttonPanel, BorderLayout.SOUTH);
 
-        // --- 3. Add Listeners ---
-        cancelButton.addActionListener(e -> dispose()); // Just close the dialog
-        updateButton.addActionListener(e -> saveChanges());
+        cancelButton.addActionListener(e -> dispose()); // close the dialog
+        updateButton.addActionListener(e -> saveChanges()); // save changes, duh
 
-        // --- 4. Load Data ---
-        loadStaffDropdown();
-        loadLogData();
+        loadStaffDropdown(); // load staff
+        loadLogData(); // load other data associated with said row
     }
 
-    /**
-     * Loads the existing data for this log from the DB into the form fields.
-     */
     private void loadLogData() {
-        String sql = "SELECT * FROM MaintenanceTracker WHERE ReportID = ?";
+        String sql = "SELECT * FROM MaintenanceTracker WHERE ReportID = ?"; // makes sure we get a specific row.
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, reportId);
-            ResultSet rs = pstmt.executeQuery();
+            pstmt.setInt(1, reportId); // set ? to the report id
+            ResultSet rs = pstmt.executeQuery(); // execute the query and get the results
 
-            if (rs.next()) {
-                statusCombo.setSelectedItem(rs.getString("Status"));
-                priorityCombo.setSelectedItem(rs.getString("Priority"));
-                costField.setText(String.valueOf(rs.getDouble("MaintenanceCost")));
-                descriptionArea.setText(rs.getString("Description"));
+            if (rs.next()) { // if a row was returned
+                statusCombo.setSelectedItem(rs.getString("Status")); //  set status dropdown to match database value to match item on list
+                priorityCombo.setSelectedItem(rs.getString("Priority")); // same here except priority
+                costField.setText(String.valueOf(rs.getDouble("MaintenanceCost"))); // same here except it converts the double from the DB to a string
+                descriptionArea.setText(rs.getString("Description")); // set multilines description text area
 
-                // Set Maintenance Date (handling NULL)
-                Date maintDate = rs.getDate("MaintenanceDate");
-                if (maintDate != null) {
+                Date maintDate = rs.getDate("MaintenanceDate"); // handles date and null handling
+                if (maintDate != null) { // format it into the format required if date exists
                     maintDateField.setText(new SimpleDateFormat("yyyy-MM-dd").format(maintDate));
+                } else {
+                    // If the date is null, leave the date field blank for the user to fill up
+                    maintDateField.setText("");
                 }
 
                 // Set 'Reported By' Combo
-                int reportedById = rs.getInt("ReportedBy");
+                int reportedById = rs.getInt("ReportedBy"); // get staffid of user who reported
                 for (int i = 0; i < reportedByCombo.getItemCount(); i++) {
-                    if (reportedByCombo.getItemAt(i).getId() == reportedById) {
-                        reportedByCombo.setSelectedIndex(i);
-                        break;
+                    if (reportedByCombo.getItemAt(i).getId() == reportedById) { // check if id matches from db
+                        reportedByCombo.setSelectedIndex(i); // if matches, set this item to be currently selected one in dropdown
+                        break; // stop searching when match found
                     }
                 }
             }
-        } catch (SQLException e) {
+        } catch (SQLException e) { // error handling
             JOptionPane.showMessageDialog(this, "Error loading log data:\n" + e.getMessage(), "DB Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    /**
-     * Loads the staff list for the "Reported By" dropdown.
-     */
-    private void loadStaffDropdown() {
-        reportedByCombo.removeAllItems();
+    private void loadStaffDropdown() { // populates the reported by dropdown with active kitchen staff
+        reportedByCombo.removeAllItems(); // clear any items in case called more than once
         String sql = "SELECT StaffID, FirstName, LastName FROM KitchenStaff WHERE EmploymentStatus = 'Active' ORDER BY FirstName";
+        // fetches info, ordering them by first name for easier user selection
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                reportedByCombo.addItem(new KitchenStaffItem(
+            while (rs.next()) { // for each staff member
+                reportedByCombo.addItem(new KitchenStaffItem(// extract the staff id and concatenate the name
                         rs.getInt("StaffID"),
                         rs.getString("FirstName") + " " + rs.getString("LastName")
                 ));
             }
-        } catch (SQLException e) {
+        } catch (SQLException e) { // error handling again
             JOptionPane.showMessageDialog(this, "Error loading staff list:\n" + e.getMessage(), "DB Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    /**
-     * Runs the UPDATE query to save changes to the database.
-     */
-    private void saveChanges() {
-        // Get values from form
+    private void saveChanges() { // handles input validation and performs the final db update
+        // Get values from the forms
         String status = (String) statusCombo.getSelectedItem();
         String priority = (String) priorityCombo.getSelectedItem();
         KitchenStaffItem staff = (KitchenStaffItem) reportedByCombo.getSelectedItem();
         String description = descriptionArea.getText();
 
-        // --- Validation ---
         double cost;
-        try {
+        try { // checks for input error;  attempt to change characters in cost field into a double
             cost = Double.parseDouble(costField.getText());
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException e) { // error handling for texts n such
             JOptionPane.showMessageDialog(this, "Invalid cost. Please enter a number.", "Input Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         java.sql.Date maintSqlDate = null;
         String dateText = maintDateField.getText().trim();
-        if (!dateText.isEmpty()) {
+        if (!dateText.isEmpty()) { // if field isnt empty (not NULL)
             try {
-                // Parse java.util.Date
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                sdf.setLenient(false); // Strict parsing
-                Date utilDate = sdf.parse(dateText);
-                // Convert to java.sql.Date
-                maintSqlDate = new java.sql.Date(utilDate.getTime());
-            } catch (ParseException e) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); // strict parser for format
+                sdf.setLenient(false); // Strict parsing; strict adherance to format
+                Date utilDate = sdf.parse(dateText); // user's string into java date object
+                maintSqlDate = new java.sql.Date(utilDate.getTime()); // Convert to java.sql.Date
+            } catch (ParseException e) { // erorr handling
                 JOptionPane.showMessageDialog(this, "Invalid date. Please use YYYY-MM-DD format.", "Input Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
         }
 
-        if (staff == null) {
+        if (staff == null) { // checks if combo box item is actually selected
             JOptionPane.showMessageDialog(this, "Please select a 'Reported By' staff.", "Input Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        // --- Run UPDATE ---
+        // run DB update
         String sql = "UPDATE MaintenanceTracker SET " +
                 "Status = ?, Priority = ?, ReportedBy = ?, " +
                 "MaintenanceCost = ?, MaintenanceDate = ?, Description = ? " +
                 "WHERE ReportID = ?";
 
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) { // bind user values to placeholder question marks
             pstmt.setString(1, status);
             pstmt.setString(2, priority);
             pstmt.setInt(3, staff.getId());
             pstmt.setDouble(4, cost);
 
-            if (maintSqlDate != null) {
+            if (maintSqlDate != null) { // Set the Date object if it exists
                 pstmt.setDate(5, maintSqlDate);
-            } else {
+            } else { // set a SQL NULL value.
                 pstmt.setNull(5, Types.DATE);
             }
 
-            pstmt.setString(6, description);
+            pstmt.setString(6, description); // specify which row to update
             pstmt.setInt(7, reportId);
 
             int rowsAffected = pstmt.executeUpdate();
-            if (rowsAffected > 0) {
+            if (rowsAffected > 0) { // check if update was successful
                 JOptionPane.showMessageDialog(this, "Update Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                dispose(); // Close this dialog
+                dispose(); // Close this dialog now that changes are saved
             }
-        } catch (SQLException e) {
+        } catch (SQLException e) { //error handling
             JOptionPane.showMessageDialog(this, "Error saving changes:\n" + e.getMessage(), "DB Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    /**
-     * Inner class for the staff dropdown (needs to be here or in the parent).
-     */
-    private class KitchenStaffItem {
+    private class KitchenStaffItem { // display name and also stores id
         private int id;
         private String name;
 
@@ -740,9 +712,9 @@ class EditLogDialog extends JDialog {
             this.id = id; this.name = name;
         }
 
-        public int getId() { return id; }
+        public int getId() { return id; } // getter
 
         @Override
-        public String toString() { return name; }
+        public String toString() { return name; } // displays name and nothing else
     }
 }
