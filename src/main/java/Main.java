@@ -53,6 +53,7 @@ public class Main extends JFrame implements ActionListener {
 
         showMainmenu();
         setVisible(true);
+        setLocationRelativeTo(null);
     }
 
     public void showMainmenu(){

@@ -287,6 +287,8 @@ public class ViewReportsPage extends JPanel implements ActionListener {
                     "WHERE (YEAR(m.reportDate) = ? OR ? = 0)\n" +
                     "AND (MONTH(m.reportDate) = ? OR ? = 0)\n" +
                     "GROUP BY e.EquipmentName";
+
+
             try (Connection conn = DriverManager.getConnection(
                     "jdbc:mysql://127.0.0.1:3306/ccinfomdb", "root", "12345678");
                  PreparedStatement s = conn.prepareStatement(sql)) {

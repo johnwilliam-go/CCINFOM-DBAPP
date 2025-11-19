@@ -73,14 +73,15 @@ public class EditStaffRole extends javax.swing.JFrame {
         }
 
         //Overwriting SQL Query
-        String sql = "INSERT INTO KitchenStaff (FirstName, LastName, Role, EmploymentStatus) VALUES (?,?,?,?)";
+        String sql = "INSERT INTO KitchenStaff (UserID, FirstName, LastName, Role, EmploymentStatus) VALUES (?,?,?,?,?)";
         try (Connection conn = getConnection(); PreparedStatement ppstmt = conn.prepareStatement(sql);){
 
             //Setting values for ?
-            ppstmt.setString(1, firstName);
-            ppstmt.setString(2, lastName);
-            ppstmt.setString(3, role);
-            ppstmt.setString(4, status);
+            ppstmt.setString(1, firstName + "." + lastName);
+            ppstmt.setString(2, firstName);
+            ppstmt.setString(3, lastName);
+            ppstmt.setString(4, role);
+            ppstmt.setString(5, status);
 
             //Execute query
             int rowsAffected = ppstmt.executeUpdate();
@@ -142,7 +143,7 @@ public class EditStaffRole extends javax.swing.JFrame {
         }
     }
 
-    private void removeRole_Click(ActionEvent evt) {
+    private void removeRole_Click(ActionEvent evt) throws SQLException {
         String staffIdString = JOptionPane.showInputDialog(this, "Enter New Staff ID:");
         if (staffIdString == null || staffIdString.trim().isEmpty()){
             return;
@@ -155,7 +156,19 @@ public class EditStaffRole extends javax.swing.JFrame {
         }
 
         //SQL Query
-        String sql = "DELETE FROM KitchenStaff WHERE StaffID = ?";
+        String sqlOrders = "UPDATE orderentries SET PreparedBy = NULL WHERE PreparedBy = ?";
+        try (Connection conn = getConnection(); PreparedStatement s = conn.prepareStatement(sqlOrders);){
+            s.setInt(1, Integer.parseInt(staffIdString));
+            s.executeUpdate();
+        }
+
+        String sqlMaintenance = "UPDATE maintenancetracker SET ReportedBy = NULL WHERE ReportedBy = ?";
+        try (Connection conn = getConnection(); PreparedStatement s = conn.prepareStatement(sqlMaintenance);){
+            s.setInt(1, Integer.parseInt(staffIdString));
+            s.executeUpdate();
+        }
+        String sql =
+                "DELETE FROM kitchenstaff WHERE StaffID = ?";
 
         //Connecting to the database
 
@@ -174,8 +187,8 @@ public class EditStaffRole extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "Staff ID not found. No staff member removed.");
             }
         }
-        catch(SQLException e){
-            JOptionPane.showMessageDialog(this, "Database error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
@@ -287,7 +300,11 @@ public class EditStaffRole extends javax.swing.JFrame {
 
         removeRole.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                removeRole_Click(evt);
+                try {
+                    removeRole_Click(evt);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
 
