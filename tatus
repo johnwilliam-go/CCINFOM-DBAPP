@@ -1,0 +1,71 @@
+[33m62ce9c0[m[33m ([m[1;31morigin/main[m[33m)[m test
+[33m31bc669[m Merge branch 'main' of https://github.com/johnwilliam-go/CCINFOM-DBAPP
+[33m6c31cd1[m finished the last feature
+[33m0dad84f[m finished the last feature
+[33m8c4c89e[m fixed
+[33m3d15d0f[m final ver
+[33m7965ca2[m finished the last feature
+[33m764979d[m revised the roles of the staff
+[33mf53b23f[m dbcreator fixed
+[33mc5a984c[m checkpoint for comments
+[33mf16b4f0[m checkpoint for comments
+[33m8ff7fe5[m checkpoint for comments
+[33meee9176[m checkpoint for comments
+[33mb6d34e5[m Merge remote-tracking branch 'origin/main'
+[33m07947f5[m zachs part
+[33m25cf9b0[m zachs part
+[33mb4663ea[m Merge branch 'main' of https://github.com/johnwilliam-go/CCINFOM-DBAPP
+[33md2c24c1[m Better Maintenance Log and Report; also adding garbage data for maintenance report.
+[33m5260b16[m staff left
+[33m400528f[m Major changes in the ui go to main instead to mainmenu to check functionalty added view reports page (functions are done but imma fix the design)
+[33m61045d8[m Merge branch 'main' of https://github.com/johnwilliam-go/CCINFOM-DBAPP
+[33m3556043[m ..
+[33mdc5bf27[m ..
+[33meefa8af[m Merge remote-tracking branch 'origin/main'
+[33mc993bd4[m Merge branch 'main' of https://github.com/johnwilliam-go/CCINFOM-DBAPP
+[33m2eb373e[m Final main menu
+[33m384ae40[m UPdate EditQueueStatus
+[33mb55cdb8[m Removed some columns in kitchenorderticket and  move preptime to orderentries
+[33m33362af[m Updated EditQueueStatus + MainMenu
+[33ma5b1ecb[m Merge branch 'main' of https://github.com/johnwilliam-go/CCINFOM-DBAPP
+[33m6d58e66[m Better Maintenance Log and Report; also adding garbage data for maintenance report.
+[33m9a24beb[m Added MaintenanceLog and MaintenanceReport (will be modified in the future)
+[33m1e98b17[m Merge branch 'main' of https://github.com/johnwilliam-go/CCINFOM-DBAPP
+[33mae4171e[m added jdbc connector thingie
+[33m764c336[m Merge branch 'main' of https://github.com/johnwilliam-go/CCINFOM-DBAPP
+[33m779e3d0[m Save my local changes before pulling
+[33mfba23b2[m updated maintenance log and main menu
+[33mc84c375[m Rename ccinfomdb creator.sql to database/ccinfomdb creator.sql
+[33m0b737b1[m Rename static data (make the db first before you run this).sql to database/static data (make the db first before you run this).sql
+[33m26ecbfe[m Created folder
+[33md00efe6[m Database files
+[33m0963c6d[m added report #1
+[33m6bebffa[m idk what to say
+[33m0fa446a[m fix
+[33m91ddeac[m Merge remote-tracking branch 'origin/main'
+[33m8155232[m First function implemented
+[33m4603945[m test
+[33m98de82d[m added
+[33md7ed116[m added
+[33m5d88180[m added
+[33m072663f[m added
+[33m28ed592[m added
+[33m66764e1[m fix
+[33mbd3898a[m fix
+[33m9f3e631[m f
+[33maa11f03[m er
+[33ma7c8ba7[m ee
+[33m788c08f[m self explanatory
+[33m60dcd17[m same thing
+[33md86465c[m added more placeholder buttons
+[33m5a308be[m Moved EditStaffRole.java into src/main/java
+[33mde7615b[m Moved EditStaffRole.java into src/main/java
+[33mace213d[m Create EditStaffRole.java
+[33mf520221[m Edit something
+[33m5dc80e3[m Added something
+[33m231eca1[m Created class
+[33mae7b943[m 95% done for accepting orders
+[33md37ff22[m Updated logic in AddAnOrder class
+[33mfd66c10[m First function implemented
+[33m3ec22b5[m buttons only
+[33m95bc5a0[m Initial commit
