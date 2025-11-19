@@ -134,6 +134,7 @@ BEGIN
     SELECT StaffID INTO randomStaff
     FROM KitchenStaff
     WHERE Role IN ("Head Chef", "Assistant Chef", "Cook")
+    AND EmploymentStatus = 'Active'
     ORDER BY RAND()
     LIMIT 1;
     SET NEW.PreparedBy = randomStaff;
