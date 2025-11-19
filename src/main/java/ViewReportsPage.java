@@ -300,8 +300,6 @@ public class ViewReportsPage extends JPanel implements ActionListener {
                 s.setInt(2, selectedYear);
                 s.setInt(3, selectedMonth);
                 s.setInt(4, selectedMonth);
-
-                // For the UNION query (Rows 5-8)
                 s.setInt(5, selectedYear);
                 s.setInt(6, selectedYear);
                 s.setInt(7, selectedMonth);
@@ -314,9 +312,6 @@ public class ViewReportsPage extends JPanel implements ActionListener {
                     int count = rs.getInt(2);
                     double cost = rs.getDouble(3);
 
-                    // Optional: Format currency nicely
-                    // String formattedCost = NumberFormat.getCurrencyInstance(new Locale("en", "PH")).format(cost);
-
                     model.addRow(new Object[]{
                             rs.getString(1),
                             rs.getInt(2),
@@ -326,7 +321,6 @@ public class ViewReportsPage extends JPanel implements ActionListener {
 
             } catch (SQLException ex) {
                 ex.printStackTrace();
-                // text.setText("Error fetching report: " + ex.getMessage()); // If you have a status label
                 JOptionPane.showMessageDialog(null, "Error fetching report: " + ex.getMessage());
             }
         }

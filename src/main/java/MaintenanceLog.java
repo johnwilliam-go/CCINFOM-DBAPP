@@ -236,10 +236,10 @@ public class MaintenanceLog extends JFrame {
         deleteButton = new JButton("Delete Selected"); // button, self explanatory
         refreshButton = new JButton("Refresh List"); // button, self explanatory
         backButton = new JButton("Go Back"); // button, self explanatory
-        viewContactButton = new JButton("View Contact Information"); // button, self explanatory
+        viewContactButton = new JButton("View Contact Info"); // button, self explanatory
 
         // consistent, same size for buttons
-        Dimension buttonSize = new Dimension(150, 40);
+        Dimension buttonSize = new Dimension(180, 40);
         editButton.setMaximumSize(buttonSize);
         deleteButton.setMaximumSize(buttonSize);
         refreshButton.setMaximumSize(buttonSize);
