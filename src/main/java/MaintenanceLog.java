@@ -35,10 +35,12 @@ public class MaintenanceLog extends JFrame {
 
 // buttons to allow editing the information in a report, delete a report,
 // refreshing the list, and a back button to the menu.
+// update: added button for viewing contact details
     private JButton editButton;
     private JButton deleteButton;
     private JButton refreshButton;
     private JButton backButton;
+    private JButton viewContactButton;
 
 // designing the gui with good fonts and colors
     private static final Font FONT_LABEL = new Font("Segoe UI", Font.BOLD, 14);
@@ -234,6 +236,7 @@ public class MaintenanceLog extends JFrame {
         deleteButton = new JButton("Delete Selected"); // button, self explanatory
         refreshButton = new JButton("Refresh List"); // button, self explanatory
         backButton = new JButton("Go Back"); // button, self explanatory
+        viewContactButton = new JButton("View Contact Information"); // button, self explanatory
 
         // consistent, same size for buttons
         Dimension buttonSize = new Dimension(150, 40);
@@ -241,11 +244,13 @@ public class MaintenanceLog extends JFrame {
         deleteButton.setMaximumSize(buttonSize);
         refreshButton.setMaximumSize(buttonSize);
         backButton.setMaximumSize(buttonSize);
+        viewContactButton.setMaximumSize(buttonSize);
 
         editButton.setFont(FONT_LABEL); // bold font
         deleteButton.setFont(FONT_LABEL); // bold font
         refreshButton.setFont(FONT_LABEL); // bold font
         backButton.setFont(FONT_LABEL); // bold font
+        viewContactButton.setFont(FONT_LABEL);
 
         // add buttons to panel, use rigidarea to create gap between buttons, nicer look
         actionPanel.add(editButton);
@@ -253,6 +258,8 @@ public class MaintenanceLog extends JFrame {
         actionPanel.add(deleteButton);
         actionPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         actionPanel.add(refreshButton);
+        actionPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        actionPanel.add(viewContactButton);
         actionPanel.add(Box.createVerticalStrut(30)); // bigger gap to separate, design choice
         actionPanel.add(backButton);
 
@@ -263,6 +270,7 @@ public class MaintenanceLog extends JFrame {
         editButton.addActionListener(e -> openEditDialog());
         deleteButton.addActionListener(e -> deleteSelectedLog());
         refreshButton.addActionListener(e -> loadMaintenanceLogs());
+        viewContactButton.addActionListener(e -> viewContactDetails());
         backButton.addActionListener(e -> dispose());
     }
 
@@ -400,6 +408,45 @@ public class MaintenanceLog extends JFrame {
 
         // After the dialog is closed, refresh the table
         loadMaintenanceLogs();
+    }
+
+    private void viewContactDetails() { // view contact details associated with equipment for troubleshooting/maintenance purposes
+        int selectedRow = maintenanceTable.getSelectedRow();
+        if (selectedRow == -1) {
+            showMessage("No Selection", "Please select a log to view equipment details.", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // ReportID to identify the specific log/equipment
+        int reportId = (int) tableModel.getValueAt(selectedRow, 0);
+
+        // join MaintenanceTracker with Equipments to get supplier info
+        String sql = "SELECT e.EquipmentName, e.SupplierName, e.ContactNumber, e.EmailAddress " +
+                "FROM Equipments e " +
+                "JOIN MaintenanceTracker m ON e.EquipmentID = m.EquipmentID " +
+                "WHERE m.ReportID = ?";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, reportId);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                String name = rs.getString("EquipmentName");
+                String supplier = rs.getString("SupplierName");
+                String contact = rs.getString("ContactNumber");
+                String email = rs.getString("EmailAddress");
+
+                // Create a nice formatted string for the popup; design choice i guess
+                String message = "Equipment: " + name + "\n\n" +
+                        "Supplier: " + (supplier != null ? supplier : "N/A") + "\n" +
+                        "Phone: " + (contact != null ? contact : "N/A") + "\n" +
+                        "Email: " + (email != null ? email : "N/A");
+
+                JOptionPane.showMessageDialog(this, message, "Supplier Contact Details", JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (SQLException e) {
+            showErrorDialog("Database Error", "Could not fetch contact details:\n" + e.getMessage());
+        }
     }
 
     private void deleteSelectedLog() {

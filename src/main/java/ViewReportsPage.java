@@ -281,12 +281,17 @@ public class ViewReportsPage extends JPanel implements ActionListener {
 
             String sql =
                     "SELECT e.EquipmentName, COUNT(m.EquipmentID) AS reportCounts,\n" +
-                    "SUM(m.MaintenanceCost) AS totalCost\n" +
-                    "FROM maintenancetracker m\n" +
-                    "JOIN equipments e ON m.EquipmentID = e.EquipmentID\n" +
-                    "WHERE (YEAR(m.reportDate) = ? OR ? = 0)\n" +
-                    "AND (MONTH(m.reportDate) = ? OR ? = 0)\n" +
-                    "GROUP BY e.EquipmentName";
+                            "SUM(m.MaintenanceCost) AS totalCost\n" +
+                            "FROM maintenancetracker m\n" +
+                            "JOIN equipments e ON m.EquipmentID = e.EquipmentID\n" +
+                            "WHERE (YEAR(m.reportDate) = ? OR ? = 0)\n" +
+                            "AND (MONTH(m.reportDate) = ? OR ? = 0)\n" +
+                            "GROUP BY e.EquipmentName"+
+                            " UNION ALL " +
+                            "SELECT 'TOTAL' AS EquipmentName, COUNT(m.EquipmentID) AS reportCounts, SUM(m.MaintenanceCost) AS totalCost " +
+                            "FROM MaintenanceTracker m " +
+                            "WHERE (YEAR(m.ReportDate) = ? OR ? = 0) " +
+                            "AND (MONTH(m.ReportDate) = ? OR ? = 0)";
             try (Connection conn = DriverManager.getConnection(
                     "jdbc:mysql://127.0.0.1:3306/ccinfomdb", "root", "12345678");
                  PreparedStatement s = conn.prepareStatement(sql)) {
@@ -296,9 +301,22 @@ public class ViewReportsPage extends JPanel implements ActionListener {
                 s.setInt(3, selectedMonth);
                 s.setInt(4, selectedMonth);
 
+                // For the UNION query (Rows 5-8)
+                s.setInt(5, selectedYear);
+                s.setInt(6, selectedYear);
+                s.setInt(7, selectedMonth);
+                s.setInt(8, selectedMonth);
+
                 ResultSet rs = s.executeQuery();
 
                 while (rs.next()) {
+                    String name = rs.getString(1);
+                    int count = rs.getInt(2);
+                    double cost = rs.getDouble(3);
+
+                    // Optional: Format currency nicely
+                    // String formattedCost = NumberFormat.getCurrencyInstance(new Locale("en", "PH")).format(cost);
+
                     model.addRow(new Object[]{
                             rs.getString(1),
                             rs.getInt(2),
@@ -308,12 +326,9 @@ public class ViewReportsPage extends JPanel implements ActionListener {
 
             } catch (SQLException ex) {
                 ex.printStackTrace();
-                text.setText("Error fetching frequent station report: " + ex.getMessage());
+                // text.setText("Error fetching report: " + ex.getMessage()); // If you have a status label
+                JOptionPane.showMessageDialog(null, "Error fetching report: " + ex.getMessage());
             }
         }
     }
-
-
-
 }
-
