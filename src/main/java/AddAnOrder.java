@@ -4,11 +4,10 @@ import java.awt.event.ActionListener;
 import java.sql.*;
 import javax.swing.*;
 
-public class AddAnOrder extends JFrame implements ActionListener {
-
-    private final JFrame mainFrame;
-    private final JFrame addCustomer;
-    private JFrame addOrderEntries;
+public class AddAnOrder extends JPanel implements ActionListener {
+    private Main main;
+    private JPanel addCustomer;
+    private JPanel addOrderEntries;
     private JButton  button, buttonAddOrderItem, buttonGoBack, buttonGoBack2;
     private JTextField name, orderNumber, tableNumber, orderDetails, quantity, cookingNotes;
     private JComboBox orderType, paymentMethod, itemList;
@@ -47,152 +46,121 @@ public class AddAnOrder extends JFrame implements ActionListener {
             "Lasagna"
     };
 
-
-    public AddAnOrder(JFrame frame){
-        this.mainFrame = frame;
-        addCustomer = new JFrame("Adding an Order - Customer Details");
-        addOrderEntries = new JFrame("Adding an Order - Customer's Order Entries");
-        customerDetailsFrame();
-
-        addCustomer.setVisible(true);
+    public AddAnOrder(Main main) {
+        this.main = main;
     }
 
-    public void customerDetailsFrame(){
+    public void customerDetails(){
+        addCustomer = new JPanel(null);
         addCustomer.setSize(800,600);
-        addCustomer.setResizable(false);
-        addCustomer.setLocationRelativeTo(null);
-        addCustomer.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        addCustomer.setLayout(null);
-        ImageIcon background = new ImageIcon("src/main/resources/kitchen.jpg");
-        JLabel backgroundLabel = new JLabel(background);
-        backgroundLabel.setBounds(0, 0, 800, 600);
 
         title = new JLabel("Add an Order");
         title.setFont(new Font("Arial", Font.BOLD, 40));
-        title.setForeground(Color.WHITE);
+        title.setForeground(Color.BLACK);
         title.setBounds(50, 50, 800, 50);
-
+        addCustomer.add(title);
 
         nameLabel = new JLabel("Customer Name:");
-        nameLabel.setForeground(Color.WHITE);
+        nameLabel.setForeground(Color.BLACK);
         nameLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         nameLabel.setBounds(50, 100, 800, 50);
+        addCustomer.add(nameLabel);
 
         orderNumberLabel = new JLabel("Order Number:");
-        orderNumberLabel.setForeground(Color.WHITE);
+        orderNumberLabel.setForeground(Color.BLACK);
         orderNumberLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         orderNumberLabel.setBounds(50, 150, 800, 50);
+        addCustomer.add(orderNumberLabel);
 
         tableNumberLabel = new JLabel("Table Number:");
-        tableNumberLabel.setForeground(Color.WHITE);
+        tableNumberLabel.setForeground(Color.BLACK);
         tableNumberLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         tableNumberLabel.setBounds(50, 200, 800, 50);
+        addCustomer.add(tableNumberLabel);
 
         orderTypeLabel = new JLabel("Order Type:");
-        orderTypeLabel.setForeground(Color.WHITE);
+        orderTypeLabel.setForeground(Color.BLACK);
         orderTypeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         orderTypeLabel.setBounds(50, 250, 800, 50);
+        addCustomer.add(orderTypeLabel);
 
         paymentMethodLabel = new JLabel("Payment Method:");
-        paymentMethodLabel.setForeground(Color.WHITE);
+        paymentMethodLabel.setForeground(Color.BLACK);
         paymentMethodLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         paymentMethodLabel.setBounds(50, 300, 800, 50);
+        addCustomer.add(paymentMethodLabel);
 
         orderDetailsLabel = new JLabel("Order Details:");
-        orderDetailsLabel.setForeground(Color.WHITE);
+        orderDetailsLabel.setForeground(Color.BLACK);
         orderDetailsLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         orderDetailsLabel.setBounds(50, 350, 800, 50);
+        addCustomer.add(orderDetailsLabel);
 
-        //text fields for each button
         name = new JTextField();
         name.setBounds(200, 110, 200, 30);
+        addCustomer.add(name);
 
         orderNumber = new JTextField();
         orderNumber.setBounds(200, 160, 200, 30);
+        addCustomer.add(orderNumber);
 
         tableNumber = new JTextField();
         tableNumber.setBounds(200, 210, 200, 30);
+        addCustomer.add(tableNumber);
 
         String[] optionOrderType = {"Dine in", "Take out"};
         orderType = new JComboBox(optionOrderType);
         orderType.setBounds(200, 260, 200, 30);
         orderType.addActionListener(this);
+        addCustomer.add(orderType);
 
         String[] optionPaymentMethod = {"Cash", "Credit Card", "Gcash"};
         paymentMethod = new JComboBox(optionPaymentMethod);
         paymentMethod.setBounds(200, 310, 200, 30);
         paymentMethod.addActionListener(this);
+        addCustomer.add(paymentMethod);
 
         orderDetails = new JTextField();
         orderDetails.setBounds(200, 360, 200, 30);
+        addCustomer.add(orderDetails);
 
         button = new JButton("Add Customer Details");
         button.setBounds(200, 410, 200, 30);
         button.addActionListener(this);
+        addCustomer.add(button);
 
         buttonGoBack2 = new JButton("Go Back");
         buttonGoBack2.setBounds(500, 500, 200, 30);
         buttonGoBack2.addActionListener(this);
-
-        addCustomer.add(title);
-        addCustomer.add(nameLabel);
         addCustomer.add(buttonGoBack2);
-        addCustomer.add(orderNumberLabel);
-        addCustomer.add(tableNumberLabel);
-        addCustomer.add(orderTypeLabel);
-        addCustomer.add(paymentMethodLabel);
-        addCustomer.add(orderDetailsLabel);
-        addCustomer.add(name);
-        addCustomer.add(orderNumber);
-        addCustomer.add(tableNumber);
-        addCustomer.add(orderType);
-        addCustomer.add(paymentMethod);
-        addCustomer.add(orderDetails);
-        addCustomer.add(button);
 
-        addCustomer.add(backgroundLabel);
-        addCustomer.setVisible(true);
+
+        main.setContentPane(addCustomer);
     }
 
-    public AddAnOrder(){
-        // Create a dummy JFrame to satisfy the mainFrame variable during standalone testing
-        this.mainFrame = new JFrame();
-        addCustomer = new JFrame("Adding an Order - Customer Details");
-        addOrderEntries = new JFrame("Adding an Order - Customer's Order Entries");
-        customerDetailsFrame();
-        addCustomer.setVisible(true);
-    }
-
-    // 2. THIS IS THE MAIN METHOD
-    public static void main(String[] args) {
-        // This ensures the GUI is created safely on the Event Dispatch Thread (EDT)
-        SwingUtilities.invokeLater(() -> {
-            new AddAnOrder(); // Calls the new no-argument constructor
-        });
-    }
 
     public void customerOrderEntries(){
+
+
+
+
+
+        addOrderEntries = new JPanel(null);
         addOrderEntries.setSize(800,600);
-        addOrderEntries.setResizable(false);
-        addOrderEntries.setLocationRelativeTo(null);
-        addOrderEntries.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         addOrderEntries.setLayout(null);
-        ImageIcon background2 = new ImageIcon("src/main/resources/kitchen.jpg");
-        JLabel backgroundLabel2 = new JLabel(background2);
-        backgroundLabel2.setBounds(0, 0, 800, 600);
 
         JLabel title = new JLabel("Insert Order Details");
         title.setFont(new Font("Arial", Font.BOLD, 40));
-        title.setForeground(Color.WHITE);
+        title.setForeground(Color.BLACK);
         title.setBounds(50, 50, 800, 50);
 
         JLabel customerNameDisplay = new JLabel("For Customer: " + name.getText());
         customerNameDisplay.setFont(new Font("Arial", Font.PLAIN, 16));
-        customerNameDisplay.setForeground(Color.WHITE);
+        customerNameDisplay.setForeground(Color.BLACK);
         customerNameDisplay.setBounds(50, 80, 800, 50);
 
         JLabel selectItemLabel = new JLabel("Select Item:");
-        selectItemLabel.setForeground(Color.WHITE);
+        selectItemLabel.setForeground(Color.BLACK);
         selectItemLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         selectItemLabel.setBounds(50, 140, 800, 50);
         itemList = new JComboBox(items);
@@ -201,14 +169,14 @@ public class AddAnOrder extends JFrame implements ActionListener {
 
 
         JLabel quantityLabel = new JLabel("Quantity: ");
-        quantityLabel.setForeground(Color.WHITE);
+        quantityLabel.setForeground(Color.BLACK);
         quantityLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         quantityLabel.setBounds(50, 190, 800, 50);
         quantity = new JTextField();
         quantity.setBounds(200, 200, 200, 30);
 
         JLabel cookingNotesLabel = new JLabel("Cooking Notes: ");
-        cookingNotesLabel.setForeground(Color.WHITE);
+        cookingNotesLabel.setForeground(Color.BLACK);
         cookingNotesLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         cookingNotesLabel.setBounds(50, 240, 800, 50);
         cookingNotes = new JTextField();
@@ -222,8 +190,6 @@ public class AddAnOrder extends JFrame implements ActionListener {
         buttonGoBack = new JButton("Go Back");
         buttonGoBack.setBounds(500, 500, 200, 30);
         buttonGoBack.addActionListener(this);
-
-
         addOrderEntries.add(title);
         addOrderEntries.add(buttonGoBack);
         addOrderEntries.add(buttonAddOrderItem);
@@ -234,8 +200,8 @@ public class AddAnOrder extends JFrame implements ActionListener {
         addOrderEntries.add(itemList);
         addOrderEntries.add(quantity);
         addOrderEntries.add(cookingNotes);
-        addOrderEntries.add(backgroundLabel2);
-        addOrderEntries.setVisible(true);
+
+        main.setContentPane(addOrderEntries);
     }
 
 
@@ -272,9 +238,7 @@ public class AddAnOrder extends JFrame implements ActionListener {
 
                 JOptionPane.showMessageDialog(null, "Customer Added Successfully!");
 
-                addCustomer.setVisible(false);
                 customerOrderEntries();
-                addOrderEntries.setVisible(true);
 
                 statement.close();
                 connection.close();
@@ -302,20 +266,19 @@ public class AddAnOrder extends JFrame implements ActionListener {
 
                 s1.setString(1, name.getText());
                 ResultSet kotidOfCustomer = s1.executeQuery();
+
                 int kotID = -1;
                 if (kotidOfCustomer.next()) {
                     kotID = kotidOfCustomer.getInt("KotID");
                 } else {
                     JOptionPane.showMessageDialog(null, "KotID not found for customer!");
-                    return; // stop execution
+                    return;
                 }
-//                ResultSet kotidOfCustomer = s1.executeQuery();
-//                kotidOfCustomer.next();
-//                int kotID = kotidOfCustomer.getInt("KotID");
 
                 kotidOfCustomer.close();
 
-                String selectedItem = (String) itemList.getSelectedItem(); // get the item from combo box
+
+                String selectedItem = (String) itemList.getSelectedItem();// get the item from combo box
                 s2.setString(1, selectedItem);
 
                 ResultSet itemIDofMenuItem = s2.executeQuery();
@@ -348,13 +311,10 @@ public class AddAnOrder extends JFrame implements ActionListener {
             }
         }
         else if (e.getSource() == buttonGoBack) {
-            addCustomer.setVisible(false);
-            addOrderEntries.setVisible(false);
-            mainFrame.setVisible(true);
+            main.showMainmenu();
         }
         else if  (e.getSource() == buttonGoBack2) {
-            addCustomer.setVisible(false);
-            mainFrame.setVisible(true);
+            main.showMainmenu();
         }
 
     }

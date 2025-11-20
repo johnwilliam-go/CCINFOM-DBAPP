@@ -4,28 +4,28 @@ import java.awt.event.*;
 import java.sql.*;
 import javax.swing.table.DefaultTableModel;
 
-
-
-public class EditQueueStatus extends JFrame implements ActionListener {
+public class EditQueueStatus implements ActionListener {
     // Database connection constants
     private static final String DB_URL = "jdbc:mysql://127.0.0.1:3306/ccinfomdb";
     private static final String DB_USER = "root";
     private static final String DB_PASS = "12345678";
 
     private JTable orderTable;
-    private JButton updateButton, refreshButton, backButton;
+    private JPanel editQueueStatusPanel;
+    private JButton updateButton, refreshButton, backButton, showOrderHistory;
     private DefaultTableModel model;
-    private MainMenu mainMenu; // to go back
+    private Main main; // to go back
 
-    public EditQueueStatus(MainMenu mainMenu) {
-        this.mainMenu = mainMenu;
-        setTitle("Manage Active Orders");
-        setSize(900, 500);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
+    public EditQueueStatus(Main main) {
+        this.main = main;
+    }
+
+    public void showEditQueueStatus() {
+        editQueueStatusPanel = new JPanel(new BorderLayout());
+        editQueueStatusPanel.setSize(800, 600);
 
         model = new javax.swing.table.DefaultTableModel(
-                new String[]{"OrderEntryID", "Customer", "OrderType", "Status"},
+                new String[]{"OrderEntryID", "Customer", "Ordered Item", "Quantity", "Assigned Staff", "OrderType", "Status"},
 
                 0
         ) {
@@ -37,31 +37,37 @@ public class EditQueueStatus extends JFrame implements ActionListener {
 
         orderTable = new JTable(model);
         JScrollPane scrollPane = new JScrollPane(orderTable);
-        add(scrollPane, BorderLayout.CENTER);
+        editQueueStatusPanel.add(scrollPane, BorderLayout.CENTER);
         JPanel buttonPanel = new JPanel();
 
         //Add Title Bar
         JLabel title = new JLabel("Manage Active Orders", SwingConstants.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 22));
         title.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-        add(title, BorderLayout.NORTH);
+        editQueueStatusPanel.add(title, BorderLayout.NORTH);
 
         updateButton = new JButton("Update Status");
         refreshButton = new JButton("Refresh");
         backButton = new JButton("Back to Menu");
+        showOrderHistory = new JButton("Show Order History");
 
         buttonPanel.add(updateButton);
         buttonPanel.add(refreshButton);
         buttonPanel.add(backButton);
-        add(buttonPanel, BorderLayout.SOUTH);
+        buttonPanel.add(showOrderHistory);
+        editQueueStatusPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         updateButton.addActionListener(this);
         refreshButton.addActionListener(this);
         backButton.addActionListener(this);
+        showOrderHistory.addActionListener(this);
 
-        setVisible(true);
+
         loadActiveOrders();
 
+        main.setContentPane(editQueueStatusPanel);
+        main.revalidate();
+        main.repaint();
     }
 
     private void loadActiveOrders() {
@@ -69,43 +75,55 @@ public class EditQueueStatus extends JFrame implements ActionListener {
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              Statement stmt = conn.createStatement()) {
 
-            String sql =
-                    "SELECT ent.KOTItemID, kot.CustomerName, kot.OrderType, ent.OrderStatus " +
-                            "FROM KitchenOrderTicket kot " +
-                            "JOIN OrderEntries ent ON kot.KotID = ent.KotID " +
-                            "WHERE ent.OrderStatus = 'In The Kitchen'";
+            String sql = "SELECT \n" +
+                    "    ent.KOTItemID,\n" +
+                    "    kot.CustomerName,\n" +
+                    "    kot.OrderType,\n" +
+                    "    mi.ItemName,\n" +
+                    "    ent.Quantity,\n" +
+                    "    ent.OrderStatus,\n" +
+                    "    CONCAT(ks.FirstName, ' ', ks.LastName) AS AssignedStaff\n" +
+                    "FROM KitchenOrderTicket kot\n" +
+                    "JOIN OrderEntries ent ON kot.KotID = ent.KotID\n" +
+                    "JOIN MenuItems mi ON ent.ItemID = mi.ItemID\n" +
+                    "JOIN KitchenStaff ks ON ent.PreparedBy = ks.StaffID\n" +
+                    "WHERE ent.OrderStatus = 'In The Kitchen'";
 
             ResultSet rs = stmt.executeQuery(sql);
 
             while (rs.next()) {
-                int orderEntryID = rs.getInt("KOTItemID");
+                int orderEntryID = rs.getInt("KotItemID");
                 String customer = rs.getString("CustomerName");
                 String orderType = rs.getString("OrderType");
+                String itemName = rs.getString("ItemName");
+                int quantity = rs.getInt("Quantity");
                 String status = rs.getString("OrderStatus");
-                model.addRow(new Object[]{orderEntryID, customer, orderType, status});
+                String assignedStaff = rs.getString("AssignedStaff");
+
+                model.addRow(new Object[]{orderEntryID, customer, itemName,quantity, assignedStaff, orderType, status});
             }
 
             rs.close();
             if (model.getRowCount() == 0) {
-                JOptionPane.showMessageDialog(this, "No active orders found!");
+                JOptionPane.showMessageDialog(editQueueStatusPanel, "No active orders found!");
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Database error: " + e.getMessage());
+            JOptionPane.showMessageDialog(editQueueStatusPanel, "Database error: " + e.getMessage());
         }
     }
 
     private void updateOrderStatus() {
         int selectedRow = orderTable.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select an order first.");
+            JOptionPane.showMessageDialog(editQueueStatusPanel, "Please select an order first.");
             return;
         }
 
-        String currentStatus = (String) model.getValueAt(selectedRow, 3);
+        String currentStatus = (String) model.getValueAt(selectedRow, 6);
         String nextStatus = getNextStatus(currentStatus);
 
         if (nextStatus.equals(currentStatus)) {
-            JOptionPane.showMessageDialog(this, "This order is already completed!");
+            JOptionPane.showMessageDialog(editQueueStatusPanel, "This order is already completed!");
             return;
         }
 
@@ -122,7 +140,7 @@ public class EditQueueStatus extends JFrame implements ActionListener {
             rsKot.close();
 
             if (kotID == -1) {
-                JOptionPane.showMessageDialog(this, "No matching KotID found for this entry.");
+                JOptionPane.showMessageDialog(editQueueStatusPanel, "No matching KotID found for this entry.");
                 return;
             }
 
@@ -138,12 +156,62 @@ public class EditQueueStatus extends JFrame implements ActionListener {
                             "WHERE e.KOTItemID = " + orderEntryID;
             stmt.executeUpdate(insertLog);
 
-            JOptionPane.showMessageDialog(this,
+            String sql2 =
+                    "UPDATE OrderEntries oe\n" +
+                    "JOIN KitchenOrderTicket kot ON oe.KotID = kot.KotID\n" +
+                    "SET oe.PreparationTime = \n" +
+                    "    SEC_TO_TIME(TIMESTAMPDIFF(SECOND, kot.OrderTime, oe.TimeCompleted))\n" +
+                    "WHERE oe.TimeCompleted IS NOT NULL";
+            stmt.executeUpdate(sql2);
+
+            JOptionPane.showMessageDialog(editQueueStatusPanel,
                     "Order #" + orderEntryID + " has been marked as " + nextStatus + ".");
             loadActiveOrders();
 
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Database error: " + ex.getMessage());
+            JOptionPane.showMessageDialog(editQueueStatusPanel, "Database error: " + ex.getMessage());
+        }
+    }
+
+    private void showOrdersHistory() throws SQLException {
+        model.setRowCount(0);
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             Statement stmt = conn.createStatement()) {
+
+            String sql = "SELECT \n" +
+                    "    ent.KOTItemID,\n" +
+                    "    kot.CustomerName,\n" +
+                    "    kot.OrderType,\n" +
+                    "    mi.ItemName,\n" +
+                    "    ent.Quantity,\n" +
+                    "    ent.OrderStatus,\n" +
+                    "    CONCAT(ks.FirstName, ' ', ks.LastName) AS AssignedStaff\n" +
+                    "FROM KitchenOrderTicket kot\n" +
+                    "JOIN OrderEntries ent ON kot.KotID = ent.KotID\n" +
+                    "JOIN MenuItems mi ON ent.ItemID = mi.ItemID\n" +
+                    "JOIN KitchenStaff ks ON ent.PreparedBy = ks.StaffID\n";
+
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while (rs.next()) {
+                int orderEntryID = rs.getInt("KotItemID");
+                String customer = rs.getString("CustomerName");
+                String orderType = rs.getString("OrderType");
+                String itemName = rs.getString("ItemName");
+                int quantity = rs.getInt("Quantity");
+                String status = rs.getString("OrderStatus");
+                String assignedStaff = rs.getString("AssignedStaff");
+
+                model.addRow(new Object[]{orderEntryID, customer, itemName,quantity, assignedStaff, orderType, status});
+            }
+
+
+            rs.close();
+            if (model.getRowCount() == 0) {
+                JOptionPane.showMessageDialog(editQueueStatusPanel, "No active orders found!");
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(editQueueStatusPanel, "Database error: " + e.getMessage());
         }
     }
 
@@ -160,8 +228,7 @@ public class EditQueueStatus extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == backButton) {
-            this.dispose();
-            mainMenu.setVisible(true);
+            main.showMainmenu();
 
         }else if (e.getSource() == refreshButton) {
             loadActiveOrders();
@@ -169,15 +236,22 @@ public class EditQueueStatus extends JFrame implements ActionListener {
         else if (e.getSource() == updateButton) {
             updateOrderStatus();
         }
+        else if(e.getSource() == showOrderHistory){
+            try {
+                showOrdersHistory();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
 
 
     }
     // For standalone testing only
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new EditQueueStatus(null).setVisible(true);
-        });
-    }
+//    public static void main(String[] args) {
+//        SwingUtilities.invokeLater(() -> {
+//            new EditQueueStatus(null).setVisible(true);
+//        });
+//    }
 
     //DB correction: preptime must be in the orderentries not kitchenorder ticket
 
