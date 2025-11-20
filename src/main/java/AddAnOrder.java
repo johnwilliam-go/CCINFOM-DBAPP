@@ -109,7 +109,7 @@ public class AddAnOrder extends JPanel implements ActionListener {
         tableNumber.setBounds(200, 210, 200, 30);
         addCustomer.add(tableNumber);
 
-        String[] optionOrderType = {"Dine in", "Take out"};
+        String[] optionOrderType = {"Dine in", "Takeout"};
         orderType = new JComboBox(optionOrderType);
         orderType.setBounds(200, 260, 200, 30);
         orderType.addActionListener(this);
