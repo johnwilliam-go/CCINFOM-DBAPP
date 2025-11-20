@@ -2,16 +2,17 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
+import java.util.Objects;
 import javax.swing.*;
 
 public class AddAnOrder extends JPanel implements ActionListener {
     private Main main;
     private JPanel addCustomer;
     private JPanel addOrderEntries;
-    private JButton  button, buttonAddOrderItem, buttonGoBack, buttonGoBack2;
+    private JButton button, buttonAddOrderItem, buttonGoBack, buttonGoBack2;
     private JTextField name, orderNumber, tableNumber, orderDetails, quantity, cookingNotes;
     private JComboBox orderType, paymentMethod, itemList;
-    private JLabel title,nameLabel, orderNumberLabel, tableNumberLabel,orderTypeLabel, paymentMethodLabel, orderDetailsLabel;
+    private JLabel title, nameLabel, orderNumberLabel, tableNumberLabel, orderTypeLabel, paymentMethodLabel, orderDetailsLabel;
 
     String[] items = {
             "Grilled Chicken Sandwich",
@@ -50,9 +51,9 @@ public class AddAnOrder extends JPanel implements ActionListener {
         this.main = main;
     }
 
-    public void customerDetails(){
+    public void customerDetails() {
         addCustomer = new JPanel(null);
-        addCustomer.setSize(800,600);
+        addCustomer.setSize(800, 600);
 
         title = new JLabel("Add an Order");
         title.setFont(new Font("Arial", Font.BOLD, 40));
@@ -139,14 +140,9 @@ public class AddAnOrder extends JPanel implements ActionListener {
     }
 
 
-    public void customerOrderEntries(){
-
-
-
-
-
+    public void customerOrderEntries() {
         addOrderEntries = new JPanel(null);
-        addOrderEntries.setSize(800,600);
+        addOrderEntries.setSize(800, 600);
         addOrderEntries.setLayout(null);
 
         JLabel title = new JLabel("Insert Order Details");
@@ -212,8 +208,8 @@ public class AddAnOrder extends JPanel implements ActionListener {
                 String customerNameField = name.getText();
                 int orderNumberField = Integer.parseInt(orderNumber.getText());
                 int tableNumberField = Integer.parseInt(tableNumber.getText());
-                String orderTypeField = String.valueOf(orderType.getSelectedIndex());
-                String paymentMethodField = String.valueOf(paymentMethod.getSelectedIndex());
+                String orderTypeField = Objects.requireNonNull(orderType.getSelectedItem()).toString();
+                String paymentMethodField = Objects.requireNonNull(paymentMethod.getSelectedItem()).toString();
                 String orderDetailsField = orderDetails.getText();
 
                 Connection connection = DriverManager.getConnection(
@@ -246,8 +242,7 @@ public class AddAnOrder extends JPanel implements ActionListener {
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
-        }
-        else if  (e.getSource() == buttonAddOrderItem) {
+        } else if (e.getSource() == buttonAddOrderItem) {
             try {
                 Connection connection = DriverManager.getConnection(
                         "jdbc:mysql://127.0.0.1:3306/ccinfomdb",
@@ -309,43 +304,12 @@ public class AddAnOrder extends JPanel implements ActionListener {
                 throw new RuntimeException(ex);
 
             }
-        }
-        else if (e.getSource() == buttonGoBack) {
+        } else if (e.getSource() == buttonGoBack) {
             main.showMainmenu();
-        }
-        else if  (e.getSource() == buttonGoBack2) {
+        } else if (e.getSource() == buttonGoBack2) {
             main.showMainmenu();
         }
 
     }
 
-    //    public static void main(String[] args) throws Exception {
-//        Connection connection = DriverManager.getConnection(
-//                "jdbc:mysql://127.0.0.1:3306/ccinfomdb",
-//                "root",
-//                "12345678"
-//        );
-//        //hard coded so everytime a user inputs a record, these data will be generated (just an example)
-//        Statement statement = connection.createStatement();
-//        String sql = "INSERT INTO equipments (EquipmentName, Category, Brand, Description, SupplierName, ContactNumber, EmailAddress) " +
-//                "VALUES ('Grill #1', 'Grill', 'ShineLong', '', '', '09372738203', 'shinelongph@gmail.com')";
-//        statement.executeUpdate(sql);
-//        statement.close();
-//        connection.close();
-//
-//        new AddAnOrder();
-//    }
-
 }
-
-    //Alsoo heres the plan for the creation of the app
-    //
-    //Each of us split the task for creating the functions of the buttons.
-    //
-    //Each button is basically your transactions and you are gonna code it so that when user inputs the data it adds into the database.
-    //
-    //If you wanna see how it works, check AddAnOrder.java (on the github i sent) to see the hardcoded process, everytime when you run main, it adds data into the equipments table.
-    //
-    //Now you are gonna integrate it with a GUI using swing.
-// Test update
-// a shotgun next to me would be nice uwu

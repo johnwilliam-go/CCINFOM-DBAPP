@@ -64,6 +64,8 @@ public class EditStaffRole extends javax.swing.JFrame {
             return;
         }
 
+
+
         //Status selection
         String[] statuses = {"Active", "On Leave", "Resigned"};
         String status = (String) JOptionPane.showInputDialog(this, "Select Employment Status:", "Add Staff:",
@@ -73,14 +75,15 @@ public class EditStaffRole extends javax.swing.JFrame {
         }
 
         //Overwriting SQL Query
-        String sql = "INSERT INTO KitchenStaff (FirstName, LastName, Role, EmploymentStatus) VALUES (?,?,?,?)";
+        String sql = "INSERT INTO KitchenStaff (UserID, FirstName, LastName, Role, EmploymentStatus) VALUES (?,?,?,?,?)";
         try (Connection conn = getConnection(); PreparedStatement ppstmt = conn.prepareStatement(sql);){
 
             //Setting values for ?
-            ppstmt.setString(1, firstName);
-            ppstmt.setString(2, lastName);
-            ppstmt.setString(3, role);
-            ppstmt.setString(4, status);
+            ppstmt.setString(1, firstName + "."+lastName);
+            ppstmt.setString(2, firstName);
+            ppstmt.setString(3, lastName);
+            ppstmt.setString(4, role);
+            ppstmt.setString(5, status);
 
             //Execute query
             int rowsAffected = ppstmt.executeUpdate();
@@ -152,6 +155,25 @@ public class EditStaffRole extends javax.swing.JFrame {
 
         if (confirm != JOptionPane.YES_OPTION){
             return; //User cancellation
+        }
+
+        String sqlOrderEntries  = "UPDATE Orderentries SET PreparedBy = NULL WHERE PreparedBy = ?";
+        try (Connection conn = getConnection(); PreparedStatement s = conn.prepareStatement(sqlOrderEntries);) {
+            //Set values for ?
+            s.setString(1, staffIdString);
+
+            s.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        String sqlMaintenance  = "UPDATE MaintenanceTracker SET ReportedBy = NULL WHERE ReportedBy = ?";
+        try (Connection conn = getConnection(); PreparedStatement s = conn.prepareStatement(sqlMaintenance);) {
+            //Set values for ?
+            s.setString(1, staffIdString);
+            s.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
 
         //SQL Query
