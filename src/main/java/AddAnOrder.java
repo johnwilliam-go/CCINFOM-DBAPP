@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.sql.*;
 import java.util.Objects;
 import javax.swing.*;
@@ -113,9 +114,24 @@ public class AddAnOrder extends JPanel implements ActionListener {
         orderType = new JComboBox(optionOrderType);
         orderType.setBounds(200, 260, 200, 30);
         orderType.addActionListener(this);
+        orderType.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                String selected = e.getItem().toString();
+
+                if (selected.equals("Takeout")) {
+                    tableNumber.setEditable(false);
+                    tableNumber.setText("0");
+                } else {
+                    tableNumber.setEditable(true);
+                    tableNumber.setText("");
+                }
+            }
+        });
         addCustomer.add(orderType);
 
-        String[] optionPaymentMethod = {"Cash", "Credit Card", "Gcash"};
+
+
+        String[] optionPaymentMethod = {"Cash", "Credit Card", "E-wallet"};
         paymentMethod = new JComboBox(optionPaymentMethod);
         paymentMethod.setBounds(200, 310, 200, 30);
         paymentMethod.addActionListener(this);

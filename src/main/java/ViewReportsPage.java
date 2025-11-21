@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
+import java.text.DecimalFormat;
 
 public class ViewReportsPage extends JPanel implements ActionListener {
     JPanel container, buttonsPanel, datePanel, rightPanel;
@@ -34,7 +35,7 @@ public class ViewReportsPage extends JPanel implements ActionListener {
         avgOrderPrepTime.addActionListener(this);
         buttonsPanel.add(avgOrderPrepTime);
 
-        salesReveneue = new JButton("Sales reveneue");
+        salesReveneue = new JButton("Sales revenue");
         salesReveneue.setBounds(20, 150, 175, 50);
         salesReveneue.addActionListener(this);
         buttonsPanel.add(salesReveneue);
@@ -171,6 +172,7 @@ public class ViewReportsPage extends JPanel implements ActionListener {
         }
 
         if (e.getSource() == viewReports && option.equals("Sales reveneue")) {
+            DecimalFormat df = new DecimalFormat("0.00");
             loadTable(new String[]{"Item Name", "Qty Sold", "Revenue"});
             int selectedYear = Integer.parseInt((String) yearCombo.getSelectedItem());
             int selectedMonth = monthCombo.getSelectedIndex(); // 0 = All
@@ -221,7 +223,7 @@ public class ViewReportsPage extends JPanel implements ActionListener {
                 model.addRow(new Object[]{
                             rs.getString(1),
                             rs.getString(2) == null ? "-" : rs.getString(2),
-                            "₱" + rs.getString(3)
+                            "P" + df.format(rs.getDouble(3)),
                     });
                 }
 
