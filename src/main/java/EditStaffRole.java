@@ -64,6 +64,8 @@ public class EditStaffRole extends javax.swing.JFrame {
             return;
         }
 
+
+
         //Status selection
         String[] statuses = {"Active", "On Leave", "Resigned"};
         String status = (String) JOptionPane.showInputDialog(this, "Select Employment Status:", "Add Staff:",
@@ -77,7 +79,7 @@ public class EditStaffRole extends javax.swing.JFrame {
         try (Connection conn = getConnection(); PreparedStatement ppstmt = conn.prepareStatement(sql);){
 
             //Setting values for ?
-            ppstmt.setString(1, firstName + "." + lastName);
+            ppstmt.setString(1, firstName + "."+lastName);
             ppstmt.setString(2, firstName);
             ppstmt.setString(3, lastName);
             ppstmt.setString(4, role);
@@ -143,7 +145,7 @@ public class EditStaffRole extends javax.swing.JFrame {
         }
     }
 
-    private void removeRole_Click(ActionEvent evt) throws SQLException {
+    private void removeRole_Click(ActionEvent evt) {
         String staffIdString = JOptionPane.showInputDialog(this, "Enter New Staff ID:");
         if (staffIdString == null || staffIdString.trim().isEmpty()){
             return;
@@ -155,20 +157,27 @@ public class EditStaffRole extends javax.swing.JFrame {
             return; //User cancellation
         }
 
-        //SQL Query
-        String sqlOrders = "UPDATE orderentries SET PreparedBy = NULL WHERE PreparedBy = ?";
-        try (Connection conn = getConnection(); PreparedStatement s = conn.prepareStatement(sqlOrders);){
-            s.setInt(1, Integer.parseInt(staffIdString));
+        String sqlOrderEntries  = "UPDATE Orderentries SET PreparedBy = NULL WHERE PreparedBy = ?";
+        try (Connection conn = getConnection(); PreparedStatement s = conn.prepareStatement(sqlOrderEntries);) {
+            //Set values for ?
+            s.setString(1, staffIdString);
+
             s.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
 
-        String sqlMaintenance = "UPDATE maintenancetracker SET ReportedBy = NULL WHERE ReportedBy = ?";
-        try (Connection conn = getConnection(); PreparedStatement s = conn.prepareStatement(sqlMaintenance);){
-            s.setInt(1, Integer.parseInt(staffIdString));
+        String sqlMaintenance  = "UPDATE MaintenanceTracker SET ReportedBy = NULL WHERE ReportedBy = ?";
+        try (Connection conn = getConnection(); PreparedStatement s = conn.prepareStatement(sqlMaintenance);) {
+            //Set values for ?
+            s.setString(1, staffIdString);
             s.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        String sql =
-                "DELETE FROM kitchenstaff WHERE StaffID = ?";
+
+        //SQL Query
+        String sql = "DELETE FROM KitchenStaff WHERE StaffID = ?";
 
         //Connecting to the database
 
@@ -187,8 +196,8 @@ public class EditStaffRole extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "Staff ID not found. No staff member removed.");
             }
         }
-        catch(SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        catch(SQLException e){
+            JOptionPane.showMessageDialog(this, "Database error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
@@ -300,11 +309,7 @@ public class EditStaffRole extends javax.swing.JFrame {
 
         removeRole.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                try {
-                    removeRole_Click(evt);
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
+                removeRole_Click(evt);
             }
         });
 

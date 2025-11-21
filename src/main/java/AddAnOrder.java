@@ -2,13 +2,17 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
+import java.util.Objects;
 import javax.swing.*;
 
 public class AddAnOrder extends JPanel implements ActionListener {
-    private final Main main;
+    private Main main;
+    private JPanel addCustomer;
+    private JPanel addOrderEntries;
     private JButton button, buttonAddOrderItem, buttonGoBack, buttonGoBack2;
     private JTextField name, orderNumber, tableNumber, orderDetails, quantity, cookingNotes;
     private JComboBox orderType, paymentMethod, itemList;
+    private JLabel title, nameLabel, orderNumberLabel, tableNumberLabel, orderTypeLabel, paymentMethodLabel, orderDetailsLabel;
 
     String[] items = {
             "Grilled Chicken Sandwich",
@@ -48,46 +52,46 @@ public class AddAnOrder extends JPanel implements ActionListener {
     }
 
     public void customerDetails() {
-        JPanel addCustomer = new JPanel(null);
+        addCustomer = new JPanel(null);
         addCustomer.setSize(800, 600);
 
-        JLabel title = new JLabel("Add an Order");
+        title = new JLabel("Add an Order");
         title.setFont(new Font("Arial", Font.BOLD, 40));
         title.setForeground(Color.BLACK);
         title.setBounds(50, 50, 800, 50);
         addCustomer.add(title);
 
-        JLabel nameLabel = new JLabel("Customer Name:");
+        nameLabel = new JLabel("Customer Name:");
         nameLabel.setForeground(Color.BLACK);
         nameLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         nameLabel.setBounds(50, 100, 800, 50);
         addCustomer.add(nameLabel);
 
-        JLabel orderNumberLabel = new JLabel("Order Number:");
+        orderNumberLabel = new JLabel("Order Number:");
         orderNumberLabel.setForeground(Color.BLACK);
         orderNumberLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         orderNumberLabel.setBounds(50, 150, 800, 50);
         addCustomer.add(orderNumberLabel);
 
-        JLabel tableNumberLabel = new JLabel("Table Number:");
+        tableNumberLabel = new JLabel("Table Number:");
         tableNumberLabel.setForeground(Color.BLACK);
         tableNumberLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         tableNumberLabel.setBounds(50, 200, 800, 50);
         addCustomer.add(tableNumberLabel);
 
-        JLabel orderTypeLabel = new JLabel("Order Type:");
+        orderTypeLabel = new JLabel("Order Type:");
         orderTypeLabel.setForeground(Color.BLACK);
         orderTypeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         orderTypeLabel.setBounds(50, 250, 800, 50);
         addCustomer.add(orderTypeLabel);
 
-        JLabel paymentMethodLabel = new JLabel("Payment Method:");
+        paymentMethodLabel = new JLabel("Payment Method:");
         paymentMethodLabel.setForeground(Color.BLACK);
         paymentMethodLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         paymentMethodLabel.setBounds(50, 300, 800, 50);
         addCustomer.add(paymentMethodLabel);
 
-        JLabel orderDetailsLabel = new JLabel("Order Details:");
+        orderDetailsLabel = new JLabel("Order Details:");
         orderDetailsLabel.setForeground(Color.BLACK);
         orderDetailsLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         orderDetailsLabel.setBounds(50, 350, 800, 50);
@@ -105,7 +109,7 @@ public class AddAnOrder extends JPanel implements ActionListener {
         tableNumber.setBounds(200, 210, 200, 30);
         addCustomer.add(tableNumber);
 
-        String[] optionOrderType = {"Dine in", "Take out"};
+        String[] optionOrderType = {"Dine in", "Takeout"};
         orderType = new JComboBox(optionOrderType);
         orderType.setBounds(200, 260, 200, 30);
         orderType.addActionListener(this);
@@ -137,7 +141,7 @@ public class AddAnOrder extends JPanel implements ActionListener {
 
 
     public void customerOrderEntries() {
-        JPanel addOrderEntries = new JPanel(null);
+        addOrderEntries = new JPanel(null);
         addOrderEntries.setSize(800, 600);
         addOrderEntries.setLayout(null);
 
@@ -204,8 +208,8 @@ public class AddAnOrder extends JPanel implements ActionListener {
                 String customerNameField = name.getText();
                 int orderNumberField = Integer.parseInt(orderNumber.getText());
                 int tableNumberField = Integer.parseInt(tableNumber.getText());
-                String orderTypeField = String.valueOf(orderType.getSelectedItem());
-                String paymentMethodField = String.valueOf(paymentMethod.getSelectedItem());
+                String orderTypeField = Objects.requireNonNull(orderType.getSelectedItem()).toString();
+                String paymentMethodField = Objects.requireNonNull(paymentMethod.getSelectedItem()).toString();
                 String orderDetailsField = orderDetails.getText();
 
                 Connection connection = DriverManager.getConnection(
@@ -307,4 +311,5 @@ public class AddAnOrder extends JPanel implements ActionListener {
         }
 
     }
+
 }
