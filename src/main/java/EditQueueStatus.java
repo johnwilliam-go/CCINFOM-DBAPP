@@ -5,14 +5,14 @@ import java.sql.*;
 import javax.swing.table.DefaultTableModel;
 
 public class EditQueueStatus implements ActionListener {
-    // Database connection constants
+    // Database connection for MySQL
     private static final String DB_URL = "jdbc:mysql://127.0.0.1:3306/ccinfomdb";
     private static final String DB_USER = "root";
     private static final String DB_PASS = "12345678";
 
     private JTable orderTable;
     private JPanel editQueueStatusPanel;
-    private JButton updateButton, refreshButton, backButton, showOrderHistory;
+    private JButton updateButton, refreshButton, backButton, showOrderHistory, deleteButton;
     private DefaultTableModel model;
     private Main main; // to go back
 
@@ -20,6 +20,10 @@ public class EditQueueStatus implements ActionListener {
         this.main = main;
     }
 
+    /**
+     * create Jtable for display order info, and load ALL active orders,
+     * Adds all action buttons (update, refresh, delete, history)
+     */
     public void showEditQueueStatus() {
         editQueueStatusPanel = new JPanel(new BorderLayout());
         editQueueStatusPanel.setSize(800, 600);
@@ -50,17 +54,20 @@ public class EditQueueStatus implements ActionListener {
         refreshButton = new JButton("Refresh");
         backButton = new JButton("Back to Menu");
         showOrderHistory = new JButton("Show Order History");
+        deleteButton = new JButton("Delete Order");
 
         buttonPanel.add(updateButton);
         buttonPanel.add(refreshButton);
         buttonPanel.add(backButton);
         buttonPanel.add(showOrderHistory);
+        buttonPanel.add(deleteButton);
         editQueueStatusPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         updateButton.addActionListener(this);
         refreshButton.addActionListener(this);
         backButton.addActionListener(this);
         showOrderHistory.addActionListener(this);
+        deleteButton.addActionListener(this);
 
 
         loadActiveOrders();
@@ -69,6 +76,10 @@ public class EditQueueStatus implements ActionListener {
         main.revalidate();
         main.repaint();
     }
+    /**
+     * Loads all active orders (OrderStatus = 'In The Kitchen'),displays them in the JTable.
+     * This method is called on page load and every time we refresh.
+     */
 
     private void loadActiveOrders() {
         model.setRowCount(0);
@@ -111,7 +122,14 @@ public class EditQueueStatus implements ActionListener {
             JOptionPane.showMessageDialog(editQueueStatusPanel, "Database error: " + e.getMessage());
         }
     }
-
+    /**
+     Updates the selected order's status :
+     * Check if a row is selected
+     * Determine the next status (In The Kitchen → Completed)
+     * Update OrderEntries
+     * Insert into ActivityLog for history tracking
+     * Recalculate preparation time automatically
+     */
     private void updateOrderStatus() {
         int selectedRow = orderTable.getSelectedRow();
         if (selectedRow == -1) {
@@ -172,7 +190,9 @@ public class EditQueueStatus implements ActionListener {
             JOptionPane.showMessageDialog(editQueueStatusPanel, "Database error: " + ex.getMessage());
         }
     }
-
+    /**
+     * Loads the full list of all orders (active and completed).
+     */
     private void showOrdersHistory() throws SQLException {
         model.setRowCount(0);
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
@@ -215,6 +235,83 @@ public class EditQueueStatus implements ActionListener {
         }
     }
 
+    /**
+     * deteles a mistakenly entered order entry
+     */
+    private void deleteOrder() {
+        int selectedRow = orderTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(editQueueStatusPanel, "Please select an order to delete.");
+            return;
+        }
+
+        int orderEntryID = (int) model.getValueAt(selectedRow, 0);
+
+        int confirm = JOptionPane.showConfirmDialog(
+                editQueueStatusPanel,
+                "Are you sure you want to delete OrderEntryID #" + orderEntryID + "?",
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirm != JOptionPane.YES_OPTION) return;
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)) {
+
+            conn.setAutoCommit(false); // start transaction
+
+            //delete activity log first (because of FK)
+            String deleteLog = "DELETE FROM ActivityLog WHERE OrderEntryID = ?";
+            try (PreparedStatement ps = conn.prepareStatement(deleteLog)) {
+                ps.setInt(1, orderEntryID);
+                ps.executeUpdate();
+            }
+
+            //Get KOT ID before deleting the entry
+            int kotID = -1;
+            String fetchKot = "SELECT KotID FROM OrderEntries WHERE KOTItemID = ?";
+            try (PreparedStatement ps = conn.prepareStatement(fetchKot)) {
+                ps.setInt(1, orderEntryID);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) kotID = rs.getInt("KotID");
+            }
+
+            //Delete order entry
+            String deleteEntry = "DELETE FROM OrderEntries WHERE KOTItemID = ?";
+            try (PreparedStatement ps = conn.prepareStatement(deleteEntry)) {
+                ps.setInt(1, orderEntryID);
+                ps.executeUpdate();
+            }
+
+            //If this was last entry in kot, delete the KitchenOrderTicket
+            if (kotID != -1) {
+                String count = "SELECT COUNT(*) FROM OrderEntries WHERE KotID = ?";
+                try (PreparedStatement ps = conn.prepareStatement(count)) {
+                    ps.setInt(1, kotID);
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next() && rs.getInt(1) == 0) {
+
+                        String deleteTicket = "DELETE FROM KitchenOrderTicket WHERE KotID = ?";
+                        try (PreparedStatement ps2 = conn.prepareStatement(deleteTicket)) {
+                            ps2.setInt(1, kotID);
+                            ps2.executeUpdate();
+                        }
+                    }
+                }
+            }
+
+            conn.commit();
+
+            JOptionPane.showMessageDialog(editQueueStatusPanel,
+                    "OrderEntryID #" + orderEntryID + " has been deleted.");
+
+            loadActiveOrders(); // refresh table
+
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(editQueueStatusPanel, "Delete failed: " + ex.getMessage());
+        }
+    }
+
     private String getNextStatus(String currentStatus) {
         switch (currentStatus) {
             case "In The Kitchen":
@@ -224,43 +321,35 @@ public class EditQueueStatus implements ActionListener {
         }
     }
 
-
+    /**
+     *  - refreshButton ---- reload active orders
+     *   - updateButton ---- update order status
+     *   - deleteButton ---- delete mistaken orders
+     *   - showOrderHistory ---- view all past orders
+     *   - backButton ---- return to main menu
+     * @param e the event to be processed
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == backButton) {
             main.showMainmenu();
 
-        }else if (e.getSource() == refreshButton) {
+        } else if (e.getSource() == refreshButton) {
             loadActiveOrders();
-        }
-        else if (e.getSource() == updateButton) {
+
+        } else if (e.getSource() == updateButton) {
             updateOrderStatus();
-        }
-        else if(e.getSource() == showOrderHistory){
+
+        } else if (e.getSource() == deleteButton) {
+            deleteOrder();
+
+        } else if (e.getSource() == showOrderHistory) {
             try {
                 showOrdersHistory();
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
         }
-
-
     }
-    // For standalone testing only
-//    public static void main(String[] args) {
-//        SwingUtilities.invokeLater(() -> {
-//            new EditQueueStatus(null).setVisible(true);
-//        });
-//    }
-
-    //DB correction: preptime must be in the orderentries not kitchenorder ticket
-
-    //DB changes: considering to remove usage time.
-
-
-    // my comments...
-    //subtract ordertime and ordercompleted and you will have your preperation time in the orderentries (make it automatic)
-    //one of the column should be orderentryid since similar kotid edits status at the same time
-
 
 }
