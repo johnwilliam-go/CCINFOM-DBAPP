@@ -122,13 +122,10 @@ public class EditQueueStatus implements ActionListener {
             JOptionPane.showMessageDialog(editQueueStatusPanel, "Database error: " + e.getMessage());
         }
     }
+
     /**
-     Updates the selected order's status :
-     * Check if a row is selected
-     * Determine the next status (In The Kitchen → Completed)
-     * Update OrderEntries
-     * Insert into ActivityLog for history tracking
-     * Recalculate preparation time automatically
+     * updating an order's status to 'Completed',
+     * Update OrderEntries, insert into ActivityLog for history tracking
      */
     private void updateOrderStatus() {
         int selectedRow = orderTable.getSelectedRow();
@@ -321,14 +318,7 @@ public class EditQueueStatus implements ActionListener {
         }
     }
 
-    /**
-     *  - refreshButton ---- reload active orders
-     *   - updateButton ---- update order status
-     *   - deleteButton ---- delete mistaken orders
-     *   - showOrderHistory ---- view all past orders
-     *   - backButton ---- return to main menu
-     * @param e the event to be processed
-     */
+
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == backButton) {
