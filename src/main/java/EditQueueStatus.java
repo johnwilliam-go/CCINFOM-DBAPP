@@ -97,7 +97,7 @@ public class EditQueueStatus implements ActionListener {
                     "FROM KitchenOrderTicket kot\n" +
                     "JOIN OrderEntries ent ON kot.KotID = ent.KotID\n" +
                     "JOIN MenuItems mi ON ent.ItemID = mi.ItemID\n" +
-                    "JOIN KitchenStaff ks ON ent.PreparedBy = ks.StaffID\n" +
+                    "LEFT JOIN KitchenStaff ks ON ent.PreparedBy = ks.StaffID\n" +
                     "WHERE ent.OrderStatus = 'In The Kitchen'";
 
             ResultSet rs = stmt.executeQuery(sql);
@@ -209,7 +209,7 @@ public class EditQueueStatus implements ActionListener {
                     "FROM KitchenOrderTicket kot\n" +
                     "JOIN OrderEntries ent ON kot.KotID = ent.KotID\n" +
                     "JOIN MenuItems mi ON ent.ItemID = mi.ItemID\n" +
-                    "JOIN KitchenStaff ks ON ent.PreparedBy = ks.StaffID\n";
+                    "LEFT JOIN KitchenStaff ks ON ent.PreparedBy = ks.StaffID\n";
 
             ResultSet rs = stmt.executeQuery(sql);
 
